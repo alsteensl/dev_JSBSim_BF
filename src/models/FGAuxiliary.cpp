@@ -49,9 +49,136 @@ INCLUDES
 #include "FGInertial.h"
 #include "FGAtmosphere.h"
 
+#include <iostream>
+#include <cstring>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+
+#include <cstdlib>
+#include <cstdio>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+
+
+#define PORT 65431 
+#define ADDRESS "127.0.0.1"
+
+
 using namespace std;
 
 namespace JSBSim {
+  int iter;
+
+  /*
+  SOCKET IMPLEMENTATION
+  */
+  /*int server_fd, sock ; 
+  struct sockaddr_in address;
+  int iter;
+
+
+  void launchAndConnect() {
+    int opt = 1;
+    int addrlen = sizeof(address);
+    int p, r;
+    char strBuf[1024];
+    int fd;
+
+    // Creating socket file descriptor
+    int server_fd;
+    if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0) {
+        perror("socket failed");
+        exit(EXIT_FAILURE);
+    }
+
+    // Forcefully attaching socket to the port
+    if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEPORT, &opt, sizeof(opt))) {
+        perror("setsockopt");
+        exit(EXIT_FAILURE);
+    }
+
+    struct sockaddr_in address;
+    address.sin_family = AF_INET;
+    address.sin_addr.s_addr = INADDR_ANY;
+    address.sin_port = htons(PORT);
+
+    // Forcefully attaching socket to the port
+    if (::bind(server_fd, (struct sockaddr *)&address, sizeof(address)) == -1) {
+        perror("bind failed");
+        exit(EXIT_FAILURE);
+    }
+    if (listen(server_fd, 3) < 0) {
+        perror("listen");
+        exit(EXIT_FAILURE);
+    }
+    printf("Launch and connect JSBSIM 1\n");
+
+    /*############################################################################################*/
+
+    /*sprintf(strBuf, "%d", PORT);
+
+    p = fork();
+    if (p == -1) {
+        std::cerr << "Error in fork" << std::endl;
+        exit(EXIT_FAILURE);
+    } else if (p == 0) {
+        // Open file for writing
+        fd = open("stdout", O_WRONLY | O_TRUNC | O_CREAT, S_IRUSR | S_IWUSR);
+        if (fd == -1) {
+            perror("open failed");
+            exit(EXIT_FAILURE);
+        }
+
+        // Redirect stdout and stderr to the file
+        if (dup2(fd, 1) == -1 || dup2(fd, 2) == -1) {
+            perror("dup2 failed");
+            exit(EXIT_FAILURE);
+        }
+
+        // Close the original file descriptor
+        /*close(fd);
+
+        // Child process continues execution
+        // ...
+
+        exit(0);
+    }*/
+
+    /*############################################################################################*/
+
+    //int sock;
+    /*printf("Launch and connect JSBSIM \n");
+
+    if ((sock = accept(server_fd, (struct sockaddr *)&address, (socklen_t*)&addrlen)) < 0) {
+        perror("accept");
+        exit(EXIT_FAILURE);
+    }
+    printf("Launch and connect JSBSIM2 \n");
+
+    std::cout << "libconstantMassFlow: connected to python script STDOUT > " << std::endl;
+    printf("Launch and connect \n");
+}*/
+
+/*#########################################################################################*/
+
+/*void sendBytes(int toSocket, void *buf, int n) {
+    int nSent = 0;
+
+    while (nSent < n) {
+        nSent += send(toSocket, static_cast<char *>(buf) + nSent, n - nSent, 0);
+    }
+}
+
+void recvBytes(int fromSocket, void *buf, int n) {
+    int nRecv = 0;
+
+    while (nRecv < n) {
+        nRecv += recv(fromSocket, static_cast<char *>(buf) + nRecv, n - nRecv, 0);
+    }
+}*/
 
 /*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 CLASS IMPLEMENTATION
@@ -115,7 +242,20 @@ bool FGAuxiliary::InitModel(void)
   vAeroPQR.InitMatrix();
   vMachUVW.InitMatrix();
   vEulerRates.InitMatrix();
+  //launchAndConnect();
+  printf("exited launch and connect \n");
+  FILE *positionFile = fopen("position.txt", "w");
+    if (positionFile == NULL) {
+        perror("Error opening windVel.txt");
+        exit(EXIT_FAILURE);
+    }
 
+    // Write initial values
+    fprintf(positionFile, "%d %lf %lf %lf\n", 0, 5., 5., 5.);
+
+    // Close file
+    fclose(positionFile);
+  iter = 0;
   return true;
 }
 
@@ -129,7 +269,66 @@ FGAuxiliary::~FGAuxiliary()
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 bool FGAuxiliary::Run(bool Holding)
-{
+{ 
+  double VWind[3];
+  int flag = 1;
+  int iter_BF;
+  //sendBytes(sock, &flag, sizeof(int)) ;
+  //recvBytes(sock, &VWind, 3*sizeof(double));
+  
+    double U, V, W;
+    iter += 1;
+
+    /////////////////////////////:
+    // Fonction qui renvoit la vitesse du vent de BF
+    /////////////////////////////:
+    while(iter != iter_BF){
+      FILE *windVelFile = fopen("windVel.txt", "r");
+      if (windVelFile == NULL) {
+          perror("Error opening WindVel.txt");
+          exit(EXIT_FAILURE);
+      }
+      while (fscanf(windVelFile, "%d %lf %lf %lf", &iter_BF, &U, &V, &W) != 4) {
+          perror("Error reading from WindVel.txt");
+          fclose(windVelFile);
+          windVelFile = fopen("windVel.txt", "r");
+          //exit(EXIT_FAILURE);
+      }
+      fclose(windVelFile);
+    }
+
+    // Close position.txt
+
+
+    // Do the computation and store in X Y Z the location of the aircraft
+    double X = 4.;
+    double Y = 4.;
+    double Z = 4.;
+
+    /////////////////////////////:
+    // Fonction qui renvoit la position à mettre après que la position ait été updatée
+    /////////////////////////////:
+    FILE *positionFile = fopen("position.txt", "w");
+    if (positionFile == NULL) {
+        perror("Error opening position.txt for writing");
+        exit(EXIT_FAILURE);
+    }
+    int fd = fileno(positionFile);
+    if (flock(fd, LOCK_EX) == -1) {
+        perror("Error locking file");
+        exit(EXIT_FAILURE);
+    }
+
+    // Write updated values to windVel.txt
+    fprintf(positionFile, "%d %lf %lf %lf\n", iter, X, Y, Z);
+      // Release the lock
+    if (flock(fd, LOCK_UN) == -1) {
+        perror("Error unlocking file");
+        exit(EXIT_FAILURE);
+    }
+
+    // Close windVel.txt
+    fclose(positionFile);
   if (FGModel::Run(Holding)) return true; // return true if error returned from base class
   if (Holding) return false;
 
@@ -496,3 +695,4 @@ void FGAuxiliary::Debug(int from)
 }
 
 } // namespace JSBSim
+
