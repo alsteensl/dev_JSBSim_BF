@@ -314,18 +314,18 @@ bool FGAuxiliary::Run(bool Holding)
         exit(EXIT_FAILURE);
     }
     int fd = fileno(positionFile);
-    if (flock(fd, LOCK_EX) == -1) {
+    /*if (flock(fd, LOCK_EX) == -1) {
         perror("Error locking file");
         exit(EXIT_FAILURE);
-    }
+    }*/
 
     // Write updated values to windVel.txt
     fprintf(positionFile, "%d %lf %lf %lf\n", iter, X, Y, Z);
       // Release the lock
-    if (flock(fd, LOCK_UN) == -1) {
+    /*if (flock(fd, LOCK_UN) == -1) {
         perror("Error unlocking file");
         exit(EXIT_FAILURE);
-    }
+    }*/
 
     // Close windVel.txt
     fclose(positionFile);
@@ -695,4 +695,3 @@ void FGAuxiliary::Debug(int from)
 }
 
 } // namespace JSBSim
-
