@@ -301,9 +301,9 @@ bool FGAuxiliary::Run(bool Holding)
 
 
     // Do the computation and store in X Y Z the location of the aircraft
-    double X = 4.;
-    double Y = 4.;
-    double Z = 4.;
+    double X = 500.;
+    double Y = 500.;
+    double Z = 500.;
 
     /////////////////////////////:
     // Fonction qui renvoit la position à mettre après que la position ait été updatée
