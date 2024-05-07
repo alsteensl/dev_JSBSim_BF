@@ -35,150 +35,29 @@ REFERENCES
 HISTORY
 --------------------------------------------------------------------------------
 01/26/99   JSB   Created
-Modif by alsteensl sdiard & 
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 INCLUDES
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
 
 #include <iostream>
+#include <fstream>
 
 #include "FGAuxiliary.h"
+#include "FGAircraft.h"
 #include "initialization/FGInitialCondition.h"
 #include "FGFDMExec.h"
 #include "input_output/FGPropertyManager.h"
 #include "FGInertial.h"
 #include "FGAtmosphere.h"
 
-#include <iostream>
-#include <cstring>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
+#include "FGFCS.h"
 
-#include <cstdlib>
-#include <cstdio>
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-
-
-#define PORT 65431 
-#define ADDRESS "127.0.0.1"
-
+#define PI 3.141593
 
 using namespace std;
 
 namespace JSBSim {
-  int iter;
-
-  /*
-  SOCKET IMPLEMENTATION
-  */
-  /*int server_fd, sock ; 
-  struct sockaddr_in address;
-  int iter;
-
-
-  void launchAndConnect() {
-    int opt = 1;
-    int addrlen = sizeof(address);
-    int p, r;
-    char strBuf[1024];
-    int fd;
-
-    // Creating socket file descriptor
-    int server_fd;
-    if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0) {
-        perror("socket failed");
-        exit(EXIT_FAILURE);
-    }
-
-    // Forcefully attaching socket to the port
-    if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEPORT, &opt, sizeof(opt))) {
-        perror("setsockopt");
-        exit(EXIT_FAILURE);
-    }
-
-    struct sockaddr_in address;
-    address.sin_family = AF_INET;
-    address.sin_addr.s_addr = INADDR_ANY;
-    address.sin_port = htons(PORT);
-
-    // Forcefully attaching socket to the port
-    if (::bind(server_fd, (struct sockaddr *)&address, sizeof(address)) == -1) {
-        perror("bind failed");
-        exit(EXIT_FAILURE);
-    }
-    if (listen(server_fd, 3) < 0) {
-        perror("listen");
-        exit(EXIT_FAILURE);
-    }
-    printf("Launch and connect JSBSIM 1\n");
-
-    /*############################################################################################*/
-
-    /*sprintf(strBuf, "%d", PORT);
-
-    p = fork();
-    if (p == -1) {
-        std::cerr << "Error in fork" << std::endl;
-        exit(EXIT_FAILURE);
-    } else if (p == 0) {
-        // Open file for writing
-        fd = open("stdout", O_WRONLY | O_TRUNC | O_CREAT, S_IRUSR | S_IWUSR);
-        if (fd == -1) {
-            perror("open failed");
-            exit(EXIT_FAILURE);
-        }
-
-        // Redirect stdout and stderr to the file
-        if (dup2(fd, 1) == -1 || dup2(fd, 2) == -1) {
-            perror("dup2 failed");
-            exit(EXIT_FAILURE);
-        }
-
-        // Close the original file descriptor
-        /*close(fd);
-
-        // Child process continues execution
-        // ...
-
-        exit(0);
-    }*/
-
-    /*############################################################################################*/
-
-    //int sock;
-    /*printf("Launch and connect JSBSIM \n");
-
-    if ((sock = accept(server_fd, (struct sockaddr *)&address, (socklen_t*)&addrlen)) < 0) {
-        perror("accept");
-        exit(EXIT_FAILURE);
-    }
-    printf("Launch and connect JSBSIM2 \n");
-
-    std::cout << "libconstantMassFlow: connected to python script STDOUT > " << std::endl;
-    printf("Launch and connect \n");
-}*/
-
-/*#########################################################################################*/
-
-/*void sendBytes(int toSocket, void *buf, int n) {
-    int nSent = 0;
-
-    while (nSent < n) {
-        nSent += send(toSocket, static_cast<char *>(buf) + nSent, n - nSent, 0);
-    }
-}
-
-void recvBytes(int fromSocket, void *buf, int n) {
-    int nRecv = 0;
-
-    while (nRecv < n) {
-        nRecv += recv(fromSocket, static_cast<char *>(buf) + nRecv, n - nRecv, 0);
-    }
-}*/
 
 /*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 CLASS IMPLEMENTATION
@@ -187,6 +66,12 @@ CLASS IMPLEMENTATION
 
 FGAuxiliary::FGAuxiliary(FGFDMExec* fdmex) : FGModel(fdmex)
 {
+
+  // AJOUTS POINTEUR POUR 
+  std::shared_ptr<JSBSim::FGPropagate> propagatePtr = fdmex->GetPropagate(); // VOIR CHATGPT JSBSIM CODE EXPL
+  Propagate = propagatePtr.get();
+
+  
   Name = "FGAuxiliary";
   pt = FGAtmosphere::StdDaySLpressure;     // ISA SL pressure
   tat = FGAtmosphere::StdDaySLtemperature; // ISA SL temperature
@@ -242,20 +127,25 @@ bool FGAuxiliary::InitModel(void)
   vAeroPQR.InitMatrix();
   vMachUVW.InitMatrix();
   vEulerRates.InitMatrix();
-  //launchAndConnect();
-  printf("exited launch and connect \n");
-  FILE *positionFile = fopen("position.txt", "w");
-    if (positionFile == NULL) {
-        perror("Error opening windVel.txt");
-        exit(EXIT_FAILURE);
-    }
 
-    // Write initial values
-    fprintf(positionFile, "%d %lf %lf %lf\n", 0, 5., 5., 5.);
+    // ON LOAD DANS INITMODEL CAR LA FONCTION EST APPELEE QU'UNE SEULE FOIS PENDANT LA COMPILATION 
+  //
+  //
+  //  Grid = [  [Hauteurs de la grid ( 128 valeurs)],  [Longueur de la grid (257 valeurs)],  [Largeu de la grid (257 valeurs )]    ]
+  //  
+  //  u, v et w sont des tableaux à trois dimension  
+  // 
 
-    // Close file
-    fclose(positionFile);
-  iter = 0;
+  
+  loaduwind();
+  loadvwind();
+  loadwwind();
+  loadgrid();
+
+  std::cout << u[110][110][110] << std::endl;
+  std::cout << v[110][110][110] << std::endl;
+  std::cout << w[110][110][110] << std::endl;
+
   return true;
 }
 
@@ -268,67 +158,10 @@ FGAuxiliary::~FGAuxiliary()
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+int points;
+
 bool FGAuxiliary::Run(bool Holding)
-{ 
-  double VWind[3];
-  int flag = 1;
-  int iter_BF;
-  //sendBytes(sock, &flag, sizeof(int)) ;
-  //recvBytes(sock, &VWind, 3*sizeof(double));
-  
-    double U, V, W;
-    iter += 1;
-
-    /////////////////////////////:
-    // Fonction qui renvoit la vitesse du vent de BF
-    /////////////////////////////:
-    while(iter != iter_BF){
-      FILE *windVelFile = fopen("windVel.txt", "r");
-      if (windVelFile == NULL) {
-          perror("Error opening WindVel.txt");
-          exit(EXIT_FAILURE);
-      }
-      while (fscanf(windVelFile, "%d %lf %lf %lf", &iter_BF, &U, &V, &W) != 4) {
-          perror("Error reading from WindVel.txt");
-          fclose(windVelFile);
-          windVelFile = fopen("windVel.txt", "r");
-          //exit(EXIT_FAILURE);
-      }
-      fclose(windVelFile);
-    }
-
-    // Close position.txt
-
-
-    // Do the computation and store in X Y Z the location of the aircraft
-    double X = 500.;
-    double Y = 500.;
-    double Z = 500.;
-
-    /////////////////////////////:
-    // Fonction qui renvoit la position à mettre après que la position ait été updatée
-    /////////////////////////////:
-    FILE *positionFile = fopen("position.txt", "w");
-    if (positionFile == NULL) {
-        perror("Error opening position.txt for writing");
-        exit(EXIT_FAILURE);
-    }
-    int fd = fileno(positionFile);
-    /*if (flock(fd, LOCK_EX) == -1) {
-        perror("Error locking file");
-        exit(EXIT_FAILURE);
-    }*/
-
-    // Write updated values to windVel.txt
-    fprintf(positionFile, "%d %lf %lf %lf\n", iter, X, Y, Z);
-      // Release the lock
-    /*if (flock(fd, LOCK_UN) == -1) {
-        perror("Error unlocking file");
-        exit(EXIT_FAILURE);
-    }*/
-
-    // Close windVel.txt
-    fclose(positionFile);
+{
   if (FGModel::Run(Holding)) return true; // return true if error returned from base class
   if (Holding) return false;
 
@@ -365,6 +198,8 @@ bool FGAuxiliary::Run(bool Holding)
   }
 
   UpdateWindMatrices();
+
+  //printf("Je suis dans auxiliary \n");
 
   Re = Vt * in.Wingchord / in.KinematicViscosity;
 
@@ -420,6 +255,128 @@ bool FGAuxiliary::Run(bool Holding)
 
   FGColumnVector3 vMac = in.Tb2l * in.RPBody;
   hoverbmac = (in.DistanceAGL - vMac(3)) / in.Wingspan;
+
+
+  // FONCTION RAJOUTEES
+
+  double dist_long = GetLongitudeRelativePosition() * 0.3048;
+
+  double dist_lat = GetLatitudeRelativePosition() * 0.3048;
+
+  double dist_rel = GetDistanceRelativePosition() * 0.3048;
+
+  alt = Propagate->GetAltitudeASL()*0.3048;
+  ajouterDonnees("Zzz_Alt",alt);
+
+  double lon_deg = Propagate->GetLongitudeDeg();
+
+  double lat_deg = Propagate->GetGeodLatitudeDeg();
+
+  double gride = grid[0][0];
+
+  points = 20; //nombre de points de part et d'autre du centre. Ici arbitraire.
+
+  int vBoite[5][3] = {{0, 0, 3}, {0, 0, 2}, {0, 0, 1}, {0, 0, 0}, {0, 0, 0}};
+  
+
+  /* rechercheNoeuds(alt, dist_lat, dist_long, 4000.0,100.0, lon_deg);
+  //std::cout << "-----------------------------------------------------------------------------------" <<std::endl;
+  //std::cout << "Long = " << lon_deg << " [°]" <<std::endl;
+  //std::cout << "Lat = " << lat_deg << " [°]" <<std::endl;
+  //std::cout << "--------" <<std::endl;
+  //std::cout << "avancement depuis la longitude (East) depuis la position initiale =  " << dist_long << " [m]" << std::endl;
+  //std::cout << "avancement depuis la latitude (North)  depuis la position initiale = " << dist_lat << " [m]" <<std::endl;
+  //std::cout << "Distance parcourue depuis la position initiale = " << dist_rel << " [m]" <<std::endl;
+  //std::cout << "Altitude = " << alt << " [m]" <<std::endl;
+
+  discretisation(alt, dist_lat, dist_long, points);
+  dynamics(vBoite, points); */
+
+  //getRollMoment(alt, dist_lat, dist_long, lon_deg, points, 4000.0, 100.0);
+
+
+  double East_init = 1000.0; //position de départ dans la boite
+  double North_init = 7000.0;
+
+  int box = 1; //Si box = 1, on est dans la boite. HEREEEEEEEEEEEEEEEEEEE
+
+  double East_pos;
+  double North_pos;
+
+  if (lon_deg < 0)
+  {
+    dist_long *= -1;
+  }
+
+  if (lat_deg < 0)
+  {
+    dist_lat *= -1;
+  }
+
+  if (box == 1) //Dans boite
+  {
+    East_pos = dist_long + East_init; // on applique l'offset de la boite
+    North_pos = dist_lat + North_init;
+    getRollMoment(alt, North_pos, East_pos, North_init, East_init, points, East_init, North_init);
+  } 
+  else
+  {
+    East_pos = dist_long;
+    North_pos = dist_lat;
+  }
+
+  ajouterDonnees("Zzz_North", North_pos);
+  ajouterDonnees("Zzz_East", East_pos);
+  
+  //goTo(East_target, North_target, East_pos, North_pos);
+  //FDMExec->GetFCS()->SetDeCmd(-0.15);
+  //autopilot(East_target, North_target, East_pos, North_pos);
+
+  //double* velo = rechercheNoeuds(alt, North_pos, East_pos, East_init, North_init, 0.0, 0.0);
+
+  // Hello I'm Simon and I'm from Belgium
+  FGColumnVector3 boxWind = getCGWinds();
+  double updraft = boxWind(3) * -1; // - car en NED le updraft est négatif. Je le remets positif pour plus de clareté et ne pas se tromper.
+  //std::cout << "updraft = " << updraft << " " << East_pos << " " << North_pos << std::endl;
+
+  double yaw = FDMExec->GetPropagate()->GetEuler(3);
+  double time = FDMExec->GetSimTime();
+
+  double dist_target = sqrt((East_target-East_pos)*(East_target-East_pos) + (North_target-North_pos)*(North_target-North_pos));
+
+  if (dist_target <= 200.0)
+  {
+    n_target++;
+    std::cout << "@@@@@@@@@@@@@@ CHGMT DE TARGET @@@@@@@@@@@@@@";
+  }
+  
+  if (n_target == 1 || n_target == 4) {
+    East_target = 7000.0; //objectif de position a atteindre
+    North_target = 4000.0;
+  } else if (n_target == 2) {
+    East_target = 5000.0; //objectif de position a atteindre
+    North_target = 7000.0;
+  } else {
+    East_target = 2000.0; //objectif de position a atteindre
+    North_target = 2000.0;
+  }
+
+  autopilot2(updraft, time, East_pos, North_pos, East_target, North_target);
+  
+  /* if (time >= 20) {
+    turning(20.0);
+  } else {
+    goTo(4000.0 , 5000.0, East_pos, North_pos);
+  } */
+
+  //std::cout << time << "x_pos = " << East_pos << " y_pos = " << North_pos << std::endl;
+
+  double a_R = FDMExec->GetFCS()->GetDaCmd();
+  double rolleee = FDMExec->GetPropagate()->GetEuler(1);
+  ajouterDonnees("Zzz_aR", a_R);
+  ajouterDonnees("Zzz_Time", time);
+  ajouterDonnees("Zzz_Roll", rolleee);
+
 
   return false;
 }
@@ -692,6 +649,1240 @@ void FGAuxiliary::Debug(int from)
     if (from == 0) { // Constructor
     }
   }
+}
+
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+//   
+//   On import les donnés de u, v, w et la grid
+//       
+//       
+//       
+
+void FGAuxiliary::loaduwind() 
+{
+  const int dim1 = 128;  
+  const int dim2 = 257;  
+  const int dim3 = 257;  
+
+  //std::ifstream in("C:/Users/test/Documents/Master_2/Master_Thesis/jsbsim-master/src/models/atmosphere/u_aplati.csv");
+  std::ifstream in("/Users/Simon/Documents/Aaa_Thesis/git_jsbsim/jsbsim/u_aplati.csv");
+
+  if (in.is_open()) {
+      std::cout << "File u opened successfully." << std::endl;
+  } else {
+      std::cerr << "Error uopening file zebi." << std::endl;
+      return;
+  }
+
+  for (int i = 0; i < dim1; ++i) {
+      for (int j = 0; j < dim2; ++j) {
+          for (int k = 0; k < dim3; ++k) {
+              in >> u[i][j][k];
+          }
+      }
+  }
+
+  in.close();
+}
+
+void FGAuxiliary::loadvwind() 
+{
+  const int dim1 = 128;  
+  const int dim2 = 257;  
+  const int dim3 = 257;  
+
+  //std::ifstream in("C:/Users/test/Documents/Master_2/Master_Thesis/jsbsim-master/src/models/atmosphere/v_aplati.csv");
+  std::ifstream in("/Users/Simon/Documents/Aaa_Thesis/git_jsbsim/jsbsim/v_aplati.csv");
+
+  if (in.is_open()) {
+      std::cout << "File v opened successfully." << std::endl;
+  } else {
+      std::cerr << "Error v opening file zebi." << std::endl;
+      return;
+  }
+
+  for (int i = 0; i < dim1; ++i) {
+      for (int j = 0; j < dim2; ++j) {
+          for (int k = 0; k < dim3; ++k) {
+              in >> v[i][j][k];
+          }
+      }
+  }
+
+  in.close();
+}
+
+void FGAuxiliary::loadwwind() 
+{
+  const int dim1 = 128;  
+  const int dim2 = 257;  
+  const int dim3 = 257;  
+
+  //std::ifstream in("C:/Users/test/Documents/Master_2/Master_Thesis/jsbsim-master/src/models/atmosphere/w_aplati.csv");
+  std::ifstream in("/Users/Simon/Documents/Aaa_Thesis/git_jsbsim/jsbsim/w_aplati.csv");
+
+  if (in.is_open()) {
+      std::cout << "File w opened successfully." << std::endl;
+  } else {
+      std::cerr << "Error w  opening file zebi." << std::endl;
+      return;
+  }
+
+  for (int i = 0; i < dim1; ++i) {
+      for (int j = 0; j < dim2; ++j) {
+          for (int k = 0; k < dim3; ++k) {
+              in >> w[i][j][k];
+          }
+      }
+  }
+
+  in.close();
+}
+
+void FGAuxiliary::loadgrid()
+{
+  //std::ifstream in("C:/Users/test/Documents/Master_2/Master_Thesis/jsbsim-master/src/models/atmosphere/grid.csv");
+  std::ifstream in("/Users/Simon/Documents/Aaa_Thesis/git_jsbsim/jsbsim/grid.csv");
+
+  if (in.is_open()) {
+      std::cout << "File grid opened successfully." << std::endl;
+  } else {
+      std::cerr << "Error grid  opening file zebi." << std::endl;
+      return;
+  }
+
+  for (int i = 0; i < 3; ++i) {
+
+    if (i == 0 )
+    {
+      for (int j = 0; j < 128; ++j){
+        in >> grid[i][j];
+      }
+    }
+
+    if (i == 1 )
+    {
+      for (int j = 0; j < 257; ++j){
+        in >> grid[i][j];
+      }
+    }
+
+    if (i == 2 )
+    {
+      for (int j = 0; j < 257; ++j){
+        in >> grid[i][j];
+      }
+    }
+  }
+
+  in.close();
+}
+
+// on test
+// re test encore 
+// Ici on rentre dans la boite bigflow à la position initiale : ( 1000 [m] (altitude), 0 [m] (Longueur), 4000 [m] (largeur) )
+// Donc je suis en face de la boite au milieu 
+//
+//Print les infos de où on est dans la grid de vent 
+//
+double* FGAuxiliary::rechercheNoeuds(double hauteur, double longueur, double largeur, double refz,double ref_long, double longi, double lat) //x,y et z selon la règle de la main droite
+{    
+    // Parcourir le tableau hauteur 
+    int indice1h = -1, indice2h = -1;
+    for (int i = 0; i < 127 - 1; ++i) {
+        if (grid[0][i] <= hauteur && hauteur <= grid[0][i + 1]) {
+            indice1h = i;
+            indice2h = i + 1;
+            break;
+        }
+    }
+
+    //double z_bis = largeur;
+    /* if (lat<0) // SI LONG < 0 ALORS ON TOURNE VERS LA GAUCHE OU ATTENDRE 1 SEC ?
+    {
+      longueur *= -1;
+    } */
+
+    // Parcourir le tableau longueur 
+    int indice1y = -1, indice2y = -1;
+    for (int i = 0; i < 256 - 1; ++i) {
+        if (grid[1][i] <= (longueur) && (longueur) <= grid[1][i + 1]) {
+            indice1y = i;
+            indice2y = i + 1;
+            break;
+        }
+    }
+
+
+    double z_bis = largeur;
+    /* if (longi<0) // SI LONG < 0 ALORS ON TOURNE VERS LA GAUCHE OU ATTENDRE 1 SEC ?
+    {
+      largeur *= -1;
+    } */
+    // LE METTRE DEJA DANS LA BOITE SINON PROBLEME AVEC L INTERPOLATION
+    // Parcourir le tableau largeur  
+    int indice1z = -1, indice2z = -1;
+    for (int i = 0; i < 256 - 1; ++i) {
+        if (grid[2][i] <= largeur  && largeur <= grid[2][i + 1]) {
+            indice1z = i;
+            indice2z = i + 1;
+            break;
+        }
+    }
+
+    //std::cout << indice1h << " " << indice2h << " " << indice1y << " " << indice2y << " " << indice1z << " " << indice2z << std::endl;
+
+    // Afficher les indices et les distances
+    /* std::cout << "-----------------------------------------------------------------------------" << std::endl;
+    std::cout << "POSITION INITIALE : Hauteur = 1000 [m], Longueur = 100 [m], Largeur = 4000 [m]" << std::endl;
+    
+    std::cout << "------------------HAUTEUR------------------" << std::endl;
+    if (indice1h != -1 && indice2h != -1) {
+        std::cout << "La hauteur " << hauteur << " [m] se trouve entre les noeuds " << indice1h << " ("<<grid[0][indice1h] << "[m]) et " << indice2h<< " ("<<grid[0][indice2h] << "[m])cd " << std::endl;
+        std::cout << "Distance par rapport au noeud " << indice1h << " = " << hauteur - grid[0][indice1h] << "[m] " << std::endl;
+        std::cout << "Distance par rapport au noeud" << indice2h << " = " << grid[0][indice2h] - hauteur << "[m] "<< std::endl;
+    } else {
+        std::cout << "La valeur " << hauteur << " n'est pas présente dans le tableau." << std::endl;
+    }
+
+    std::cout << "----------------AVANT/ARRIERE----------------" << std::endl;
+    if (indice1y != -1 && indice2y != -1) {
+        std::cout << "J'ai avance de " << longueur  << " [m] en avant depuis l'entree dans BigFlow  "  << std::endl;
+        std::cout << "Je me trouve  entre les noeuds " << indice1y << " ("<<grid[1][indice1y] << "[m]) et " << indice2y << " ("<<grid[1][indice2y] << "[m]) " << std::endl;
+        std::cout << "Distance par rapport au noeud " << indice1y << " = " << (longueur + ref_long) - grid[1][indice1y] << "[m] " << std::endl;
+        std::cout << "Distance par rapport au noeud" << indice2y << " = " << grid[1][indice2y] - (longueur+ref_long) << "[m] "<< std::endl;
+    } else {
+        std::cout << "La valeur " << longueur + ref_long << " n'est pas présente dans le tableau." << std::endl;
+    }
+
+    std::cout << "-----------------DROITE/GAUCHE---------------" << std::endl;
+    if (indice1z != -1 && indice2z != -1) {
+        
+        if (longi > 0 )
+        {
+          std::cout << "J'avance vers la droite" << std::endl;
+        }
+        else {
+          std::cout << "J'avance vers la gauche" << std::endl;
+        }
+        std::cout << "J'ai avance de " << z_bis << " [m] depuis l'entree dans BigFlow " << std::endl;
+        std::cout << "Je me trouve  entre les noeuds " << indice1z << " ("<<grid[2][indice1z] << "[m]) et " << indice2z << " ("<<grid[2][indice2z] << "[m]) " << std::endl;
+        std::cout << "Distance par rapport au noeud " << indice1z << " = " <<  (largeur + refz) - grid[2][indice1z] << "[m] " << std::endl;
+        std::cout << "Distance par rapport au noeud " << indice2z << " = " << grid[2][indice2z] - (largeur+ refz) << "[m] "<< std::endl;
+    } else {
+        std::cout << "La valeur " << largeur + refz << " n'est pas présente dans le tableau." << std::endl;
+    } */
+
+ 
+     // RATIO 
+    double delta_h = hauteur - grid[0][indice1h];
+    double delta_h_1_0 = grid[0][indice2h] - grid[0][indice1h];
+    double ratio_h = delta_h / delta_h_1_0;
+
+    double delta_long = (longueur) - grid[1][indice1y];
+    double delta_long_1_0 = grid[1][indice2y] - grid[1][indice1y];
+    double ratio_long = delta_long / delta_long_1_0;
+
+
+    double delta_larg =  (largeur) - grid[2][indice1z];
+    double delta_larg_1_0 = grid[2][indice2z] - grid[2][indice1z];
+    double ratio_larg = delta_larg / delta_larg_1_0;
+
+    //########################################################### u ########################################################################
+    double uc000 = u[indice1h][indice1y][indice1z];
+    //std::cout << uc000 << std::endl;
+    double uc100 = u[indice1h][indice1y][indice2z];
+    double uc101 = u[indice2h][indice1y][indice2z];
+    double uc001 = u[indice2h][indice1y][indice1z];
+    double uc011 = u[indice2h][indice2y][indice1z];
+    double uc111 = u[indice2h][indice2y][indice2z];
+    double uc110 = u[indice1h][indice2y][indice2z];
+    double uc010 = u[indice1h][indice2y][indice1z]; 
+
+    // ALONG Xu 
+    double uc00 = uc000 * (1-ratio_larg) + uc100 * ratio_larg;
+    double uc01 = uc001 * (1-ratio_larg) + uc101 * ratio_larg;
+    double uc10 = uc010 * (1-ratio_larg) + uc110 * ratio_larg;
+    double uc11 = uc011 * (1-ratio_larg) + uc111 * ratio_larg;
+
+    //ALONG Yu
+    double uc0 = uc00 * (1-ratio_long) + uc10 * ratio_long;
+    double uc1 = uc01 * (1-ratio_long) + uc11 * ratio_long;
+
+    // ALONG Zu
+    double uc = uc0 * (1-ratio_h) + uc1 * ratio_h;
+
+    //########################################################### v ########################################################################
+    double vc000 = v[indice1h][indice1y][indice1z];
+    double vc100 = v[indice1h][indice1y][indice2z];
+    double vc101 = v[indice2h][indice1y][indice2z];
+    double vc001 = v[indice2h][indice1y][indice1z];
+    double vc011 = v[indice2h][indice2y][indice1z];
+    double vc111 = v[indice2h][indice2y][indice2z];
+    double vc110 = v[indice1h][indice2y][indice2z];
+    double vc010 = v[indice1h][indice2y][indice1z]; 
+
+    // ALONG Xv 
+    double vc00 = vc000 * (1-ratio_larg) + vc100 * ratio_larg;
+    double vc01 = vc001 * (1-ratio_larg) + vc101 * ratio_larg;
+    double vc10 = vc010 * (1-ratio_larg) + vc110 * ratio_larg;
+    double vc11 = vc011 * (1-ratio_larg) + vc111 * ratio_larg;
+
+    //ALONG Yv
+    double vc0 = vc00 * (1-ratio_long) + vc10 * ratio_long;
+    double vc1 = vc01 * (1-ratio_long) + vc11 * ratio_long;
+
+    // ALONG Zv
+    double vc = vc0 * (1-ratio_h) + vc1 * ratio_h;
+
+    //########################################################### w ########################################################################
+    double wc000 = w[indice1h][indice1y][indice1z];
+    double wc100 = w[indice1h][indice1y][indice2z];
+    double wc101 = w[indice2h][indice1y][indice2z];
+    double wc001 = w[indice2h][indice1y][indice1z];
+    double wc011 = w[indice2h][indice2y][indice1z];
+    double wc111 = w[indice2h][indice2y][indice2z];
+    double wc110 = w[indice1h][indice2y][indice2z];
+    double wc010 = w[indice1h][indice2y][indice1z];
+
+    // ALONG Xw 
+    double wc00 = wc000 * (1-ratio_larg) + wc100 * ratio_larg;
+    double wc01 = wc001 * (1-ratio_larg) + wc101 * ratio_larg;
+    double wc10 = wc010 * (1-ratio_larg) + wc110 * ratio_larg;
+    double wc11 = wc011 * (1-ratio_larg) + wc111 * ratio_larg;
+
+    //ALONG Yw
+    double wc0 = wc00 * (1-ratio_long) + wc10 * ratio_long;
+    double wc1 = wc01 * (1-ratio_long) + wc11 * ratio_long;
+
+    // ALONG Zw
+    double wc = wc0 * (1-ratio_h) + wc1 * ratio_h;
+
+    /* std::cout << "-----------------vitesses (u,v,w) [m/s]--------------------" << std::endl;
+    std::cout << "(" << uc << ", " << vc << ", " << wc << ")" <<std::endl;
+    std::cout << "-----------------------------------------------------------" << std::endl; */
+
+    double velocities[3] = {uc, vc, wc};
+    //std::cout << uc << vc << wc << std::endl;
+
+    //std::cout << w[112][169][128] << std::endl;
+    /* std::cout << u[110][110][110] << std::endl;
+    std::cout << v[110][110][110] << std::endl;
+    std::cout << w[110][110][110] << std::endl; */
+
+    return velocities;
+}
+
+/* void FGAuxiliary::discretisation(double x, double y, double z, int n){
+  double width = in.Wingspan*0.3048;
+  double dw = width/(2*n);
+  double D;
+  double positions[2*n+1][3];
+  
+  double yaw = Propagate->GetEuler(ePhi);
+  double pitch = Propagate->GetEuler(eTht);
+  double roll = Propagate->GetEuler(ePsi);
+
+  double theta = 3.14159/2 + yaw;
+  double phi = 3.14159/2 - roll;
+
+  for (int i = 0; i < 2*n+1; i++)
+  {
+    if (i<=n)
+    {
+      D = (n-i)*dw;
+      positions[i][0] = y - D*sin(phi)*cos(theta);
+      positions[i][1] = z - D*sin(phi)*sin(theta);
+      positions[i][2] = x - D*cos(phi);
+    } else {
+      D = (i-n)*dw;
+      positions[i][0] = y + D*sin(phi)*cos(theta);
+      positions[i][1] = z + D*sin(phi)*sin(theta);
+      positions[i][2] = x + D*cos(phi);
+    }
+    
+  }
+  std::cout << "yaw: " << yaw << " pitch: " << pitch << " roll: " << roll << std::endl;
+  std::cout << "Position tip gauche : (" << positions[0][0] << "," << positions[0][1] << "," << positions[0][2] << ")" << std::endl;
+  std::cout << "(" << positions[1][0] << "," << positions[1][1] << "," << positions[1][2] << ")" << std::endl;
+  std::cout << "(" << positions[2][0] << "," << positions[2][1] << "," << positions[2][2] << ")" << std::endl;
+  std::cout << "(" << positions[3][0] << "," << positions[3][1] << "," << positions[3][2] << ")" << std::endl;
+  std::cout << "Position CG : (" << positions[n][0] << "," << positions[n][1] << "," << positions[n][2] << ")" << std::endl;
+  std::cout << "(" << positions[5][0] << "," << positions[5][1] << "," << positions[5][2] << ")" << std::endl;
+  std::cout << "(" << positions[6][0] << "," << positions[6][1] << "," << positions[6][2] << ")" << std::endl;
+  std::cout << "(" << positions[7][0] << "," << positions[7][1] << "," << positions[7][2] << ")" << std::endl;
+  std::cout << "Position tip droit : (" << positions[2*n][0] << "," << positions[2*n][1] << "," << positions[2*n][2] << ")" << std::endl;
+  std::cout << "-----------------------------------------------------------------------------" << std::endl;
+
+} */
+
+FGColumnVector3 velCG;
+FGColumnVector3 velCGBox;
+FGColumnVector3 vPointNED;
+FGColumnVector3 vPointBody;
+FGColumnVector3 vFlow;
+FGMatrix33 TransfoNED2B;
+
+
+/* void FGAuxiliary::dynamics(int vBoite[5][3], int n) { //n le nombre d'éléments de par et d'autre CG
+  double lift[2*n+1];
+
+  double rho = (FDMExec->GetAtmosphere()->GetDensity())*515.378818;
+  double b = in.Wingspan*0.3048;
+  double c = in.Wingchord*0.3048; //constant pour le moment
+	double S   = b*c;
+  double AR = b*b/S;
+
+  double width = in.Wingspan*0.3048;
+  double dw = width/(2*n);
+
+  double a_e;
+  double C_l;
+  double U_inf;
+
+  velCG = in.vUVW*0.3048; //in BODY frame (?)
+  TransfoNED2B = in.Tl2b;
+
+  for (int i = 0; i < 2*n+1; i++)
+  {
+    vPoint(1) = vBoite[i][1];
+    vPoint(2) = -vBoite[i][2];
+    vPoint(3) = -vBoite[i][0];
+    vFlow = velCG - TransfoNED2B*vPoint;
+    
+    a_e = atan2(vFlow(3), vFlow(1));
+    C_l = 2*3.141593*(AR/(AR+2))*a_e;
+    U_inf = sqrt(vFlow(3)*vFlow(3) + vFlow(1)*vFlow(1));
+
+    lift[i] = 0.5*rho*U_inf*U_inf*C_l*c;
+  }
+
+  double rollMoment = 0.0;
+  for (int i = 0; i < 2*n+1; i++)
+  {
+    if (i<n)
+    {
+      rollMoment -= lift[i]*(n-i)*dw;
+    } else {
+      rollMoment += lift[i]*(i-n)*dw; //lift partie droite de l'aile contribue négativement au rolling moment mais il y a un moins dans la formule.
+    }
+  }
+
+  std::cout << "-----------------------------------------------------------------------------" << std::endl;
+  std::cout << "Rolling moment = " << rollMoment << " Nm" << std::endl;
+  std::cout << "-----------------------------------------------------------------------------" << std::endl;
+
+} */
+
+FGColumnVector3 boxMoment;
+FGColumnVector3 liftForce;
+
+void FGAuxiliary::getRollMoment(double hauteur, double longueur, double largeur, double longi, double lat, int n, double largeur_0, double longueur_0){
+  double width = in.Wingspan*0.3048;
+  double dw = width/(2*n);
+  double D;
+  double positions[2*n+1][3];
+  double vBoite[2*n+1][3];
+  
+  double yaw = Propagate->GetEuler(3); //ordre yaw, pitch, roll
+  double pitch = Propagate->GetEuler(2);
+  double roll = Propagate->GetEuler(1);
+
+  double theta = 3.14159/2 + yaw;
+  double phi = 3.14159/2 - roll;
+
+  double lift[2*n+1];
+
+  double rho = (FDMExec->GetAtmosphere()->GetDensity())*515.378818;
+  double b = in.Wingspan*0.3048;
+  double c = in.Wingchord*0.3048; //constant pour le moment
+	double S = b*c;
+  double AR = b*b/S;
+
+  double a_e;
+  double C_l;
+  double U_inf;
+
+  double largeur_init = 1890.0;
+  double longueur_init = 100.0;
+
+  velCG = in.vUVW*0.3048; //in BODY frame (?)
+  TransfoNED2B = in.Tl2b;
+
+  for (int i = 0; i < 2*n+1; i++)
+  {
+    if (i<=n)
+    {
+      D = (n-i)*dw;
+      positions[i][0] = longueur - D*sin(phi)*cos(theta);
+      positions[i][1] = largeur - D*sin(phi)*sin(theta);
+      positions[i][2] = hauteur - D*cos(phi);
+    } else {
+      D = (i-n)*dw;
+      positions[i][0] = longueur + D*sin(phi)*cos(theta);
+      positions[i][1] = largeur + D*sin(phi)*sin(theta);
+      positions[i][2] = hauteur + D*cos(phi);
+    }
+  }
+
+  for (int i = 0; i < 2*n+1; i++)
+  {
+    double* vel = rechercheNoeuds(positions[i][2], positions[i][0], positions[i][1], largeur_0, longueur_0, longi, lat);
+    vBoite[i][0] = vel[0];
+    vBoite[i][1] = vel[1];
+    vBoite[i][2] = vel[2];
+    //std::cout << "vBoite = " << vBoite[i][0] << " " << vBoite[i][1] << " " << vBoite[i][2] << std::endl;
+  }
+
+  for (int i = 0; i < 2*n+1; i++)
+  {
+    vPointNED(1) =  vBoite[i][1];
+    vPointNED(2) = -vBoite[i][2];
+    vPointNED(3) = -vBoite[i][0];
+
+    vPointBody = TransfoNED2B*vPointNED;
+
+    if (i == n)
+    {
+      velCGBox = vPointBody;
+    }
+    
+
+    vFlow(1) = velCG(1) + vPointBody(1); 
+    vFlow(2) = velCG(2) + vPointBody(2);
+    vFlow(3) = velCG(3) + vPointBody(3); //Frame pointe vers le bas, d'où le - plus bas pour a_e 
+
+    /* std::cout << "yaw = " << yaw << " roll = " << roll << " pitch = " << pitch << std::endl;
+    std::cout << "vPointNED = " << vPointNED << " vPointBody = " << vPointBody << std::endl;
+    std::cout << "velCG = " << velCG << " vFlow = " << vFlow << std::endl;
+    //std::cout << TransfoNED2B << std::endl; */
+
+    a_e = atan2(-vFlow(3), vFlow(1));
+    C_l = 2*3.141593*(AR/(AR+2))*a_e;
+    U_inf = sqrt(vFlow(3)*vFlow(3) + vFlow(1)*vFlow(1));
+
+    lift[i] = 0.5*rho*U_inf*U_inf*C_l*c*dw;
+  }
+
+  double rollMoment = 0.0;
+  double totalLift = 0.0;
+
+  for (int i = 0; i < 2*n+1; i++)
+  {
+    totalLift += lift[i]; //lift local de l'élément fois la surface de cet élément.
+    if (i<n)
+    {
+      rollMoment += lift[i]*(n-i)*dw;
+    } else {
+      rollMoment -= lift[i]*(i-n)*dw; //lift partie droite de l'aile contribue négativement au rolling moment mais il y a un moins dans la formule.
+    }
+  }
+
+  boxMoment(1) = rollMoment;
+  boxMoment(2) = 0.0;
+  boxMoment(3) = 0.0;
+
+  liftForce(1) = 0.0;
+  liftForce(2) = 0.0;
+  liftForce(3) = totalLift;
+
+  /* std::cout << "-----------------------------------------------------------------------------" << std::endl;
+  //std::cout << lift[0] << " " << lift[1] << " " << lift[2] << " " << lift[3] << " " << lift[4] << std::endl;
+  std::cout << "yaw = " << yaw << " roll = " << roll << " pitch = " << pitch << std::endl;
+  std::cout << "velCG = " << velCG << " vFlow = " << vFlow << std::endl; */
+  //std::cout << "Rolling moment = " << rollMoment << " Nm" << std::endl;
+}
+
+FGColumnVector3 FGAuxiliary::resultMoment() {
+  return boxMoment;
+}
+
+FGColumnVector3 FGAuxiliary::getCGWinds(){
+  return velCGBox;
+}
+
+void FGAuxiliary::goTo(double x2, double y2, double x1, double y1) {
+  double psi1 = FDMExec->GetPropagate()->GetEuler(3); //Yaw de l'avion
+  double psi2; //Angle entre axe nord et droite vers point visé
+
+  double errorPsi;
+
+  if (x1 <= x2)
+  {
+    if (y1 <= y2)
+    {
+      psi2 = atan2(x2-x1, y2-y1);
+      if (psi1 >= PI+psi2 && psi1 < 2*PI)
+      {
+        errorPsi = -((2*PI - psi1) + psi2); //négatif car on veut qu'il aille à droite
+      } else 
+      {
+        errorPsi = psi1 - psi2;
+      }
+      
+    } 
+    else 
+    {
+      psi2 = PI - atan2(x2-x1, y1-y2);
+      if (psi1 >= PI+psi2 && psi1 < 2*PI)
+      {
+        errorPsi = -((2*PI - psi1) + psi2);
+      } 
+      else 
+      {
+        errorPsi = psi1 - psi2;
+      }
+    }
+  } 
+  else 
+  {
+    if (y1 <= y2)
+    {
+      psi2 = 2*PI - atan2(x1-x2, y2-y1);
+      if (psi1 >= 0 && psi1 < psi2-PI)
+      {
+        errorPsi = psi1 + (2*PI - psi2);
+      }
+      else
+      {
+        errorPsi = psi1 - psi2;
+      }
+    } else 
+    {
+      psi2 = PI + atan2(x1-x2, y1-y2);
+      if (psi1 >= 0 && psi1 < psi2-PI)
+      {
+        errorPsi = psi1 + (2*PI - psi2);
+      }
+      else
+      {
+        errorPsi = psi1 - psi2;
+      }
+    }
+  }
+
+  errorInt += errorPsi;
+  
+  double gainP = 0.4;
+  double gainI = 0.0;
+  double gainD = 30.0;
+
+  double P = -gainP*errorPsi;
+  double I = -gainI*errorInt;
+  double D;
+  if (prevError == 0.0)
+  {
+    D = 0.0;
+  } else 
+  {
+    if (psi1 >= psi2)
+    {
+      D = gainD*(errorPsi - prevError); //ramene vers la droite (<0)
+    } else {
+      D = -gainD*(errorPsi - prevError); //ramene vers la gauche (>0)
+    }
+  }
+
+  prevError = errorPsi;
+
+  double GoTo = P + I + D;
+
+  //////////////// ROLL LIMITER //////////////////
+
+  double phi = FDMExec->GetPropagate()->GetEuler(1); //Roll de l'avion
+  double maxPhi = PI/4;
+
+  double gainRollP = -0.025;
+  double gainRollD = -10.0;
+
+  double P_Roll = gainRollP*phi;
+  double D_Roll;
+
+  if (prevError_Roll == 0)
+  {
+    D_Roll = 0;
+  } else {
+    D_Roll = gainRollD*phi;
+  }
+
+  prevError_Roll = phi;
+
+  double rollLimiter = P_Roll + D_Roll; 
+  
+  double ailerons = GoTo + rollLimiter; //Final command for the ailerons
+
+  FDMExec->GetFCS()->SetDaCmd(ailerons);
+
+  double distance = sqrt((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1));
+
+  if (distance <= 99.9)
+  {
+    FDMExec->GetFCS()->SetDeCmd(-0.15);
+  }
+  
+
+  
+  //std::cout << "-----------------------------------------------------------------------------" << std::endl;
+  //std::cout << x1 << " " << psi1 << " " << psi2 << " " << " delta Yaw = " << errorPsi << " " << ailerons << std::endl;
+  //std::cout << T << " " << errorInt << " prev: " << prevError << std::endl;
+  //std::cout << "P: " << P << " I: " << I << " D: " << D << std::endl;
+}
+
+void FGAuxiliary::initialiserFichier(const std::string& nomFichier) {
+    // Ouvrir un fichier en mode création
+    std::ofstream fichier(nomFichier);
+
+    // Vérifier si le fichier est ouvert avec succès
+    if (fichier.is_open()) {
+        std::cout << "Fichier cree avec succes." << std::endl;
+
+        // Fermer le fichier
+        fichier.close();
+    } else {
+        std::cerr << "Impossible de creer le fichier." << std::endl;
+    }
+}
+
+void FGAuxiliary::ajouterDonnees(const std::string& nomFichier,double valeur) {
+    // Ouvrir le fichier en mode ajout
+    const std::string chemin = "/Users/Simon/Documents/Aaa_Thesis/jsbsim3h30/";
+
+    std::ofstream fichier(chemin + nomFichier + ".txt", std::ios::app);
+
+    // Vérifier si le fichier est ouvert avec succès
+    if (fichier.is_open()) {
+        // Ajouter des données au fichier
+        fichier  << valeur << std::endl;
+
+        // Fermer le fichier
+        fichier.close();
+        //std::cout << "Donnees ajoutees avec succes." << std::endl;
+    } else {
+        std::cerr << "Impossible d'ouvrir le fichier pour ajout." << std::endl;
+    }
+}
+
+void FGAuxiliary::goToCenter(double x, double y, double yaw, int direction, int reset){ //on utilisera plus
+  if (yaw >= 0.0 && yaw < PI/2 && reset == 0)
+  {
+    if (direction == 1)
+    {
+      newEastTarget  = x + 500.0 * cos(yaw);
+      newNorthTarget = y - 500.0 * sin(yaw);
+    } else {
+      newEastTarget  = x - 500.0 * cos(yaw);
+      newNorthTarget = y + 500.0 * sin(yaw);
+    }
+  } else if (yaw >= PI/2 && yaw < PI && reset == 0) 
+  {
+    if (direction == 1)
+    {
+      newEastTarget  = x - 500.0 * cos(PI - yaw);
+      newNorthTarget = y - 500.0 * sin(PI - yaw);
+    } else {
+      newEastTarget  = x + 500.0 * cos(PI - yaw);
+      newNorthTarget = y + 500.0 * sin(PI - yaw);
+    }
+  } else if (yaw >= PI && yaw < 3*PI/2 && reset == 0) 
+  {
+    if (direction == 1)
+    {
+      newEastTarget  = x - 500.0 * cos(yaw - PI);
+      newNorthTarget = y + 500.0 * sin(yaw - PI);
+    } else {
+      newEastTarget  = x + 500.0 * cos(yaw - PI);
+      newNorthTarget = y - 500.0 * sin(yaw - PI);
+    }
+  } else if (yaw >= 3*PI/2 && yaw < 2*PI && reset == 0) 
+  {
+    if (direction == 1)
+    {
+      newEastTarget  = x + 500.0 * cos(2*PI - yaw);
+      newNorthTarget = y + 500.0 * sin(2*PI - yaw);
+    } else {
+      newEastTarget  = x - 500.0 * cos(2*PI - yaw);
+      newNorthTarget = y - 500.0 * sin(2*PI - yaw);
+    }
+  } else if (reset == 1) {
+      newEastTarget  = 0.0;
+      newNorthTarget = 0.0;
+  }
+  std::cout << "YES" << std::endl;
+  std::cout << newEastTarget << " " << newNorthTarget << std::endl;
+  //newCoord = {newEastTarget, newNorthTarget};
+  //return newTarget;
+}
+
+void FGAuxiliary::sideslipController(double x, double y){
+  double direction;
+  double t = FDMExec->GetSimTime();
+
+  double yaw = FDMExec->GetPropagate()->GetEuler(3);
+
+  if (y >= oldNorth) {
+    if (x >= oldEast) { //premier quadrant
+      direction = atan2(x-oldEast, y-oldNorth);
+    } else { //deuxieme quadrant
+      direction = 2*PI - atan2(oldEast-x, y-oldNorth);
+    }
+  } else {
+    if (x >= oldEast) { //quatrieme quadrant
+      direction = PI - atan2(x-oldEast, oldNorth-y);
+    } else { //troiseme quadrant
+      direction = PI + atan2(oldEast-x, oldNorth-y);
+    }
+  }
+  oldEast  = x;
+  oldNorth = y;
+
+  double sideslip = yaw - direction;
+
+  if (sideslip >= 1.0) {
+    sideslip = 0.0;
+  }
+
+  double gainPss = 0.015;
+  double gainIss = 0.0;
+  double gainDss = 100.0;
+
+  
+  double Psideslip = gainPss * sideslip;
+  double Isideslip = 0.0;
+
+  double Dsideslip;
+  if (t <= 0.08333) {
+    Dsideslip = 0.0;
+  } else {
+    Dsideslip = gainDss * (sideslip-oldSideslip);
+  }
+
+  oldSideslip = sideslip;
+
+  double cmdRudder = Psideslip + Isideslip + Dsideslip;
+
+  FDMExec->GetFCS()->SetDrCmd(cmdRudder);
+
+
+  ajouterDonnees("Zzz_yaw", yaw);
+  ajouterDonnees("Zzz_direction", direction);
+  ajouterDonnees("Zzz_t", t);
+  ajouterDonnees("Zzz_rudder", cmdRudder);
+}
+
+void FGAuxiliary::autopilot2(double updraft, double time, double x, double y, double x_t, double y_t){
+  double deltaTime = 5.0;
+  double rollInst = boxMoment(1);
+  if (turn == 1) { //in pump
+    inThermal(updraft, time, x, y, x_t, y_t);
+  } 
+  else if (time >= 60.0 && time - exitTime <= 60.0 && turn == 0 && updraft < 3.0) { //on force l'éloignement de la plume pour avancer vers target.
+    goTo(x_t, y_t, x, y);
+  }
+  else { //not in pump
+    /* if (abs(rollInst) >= 100.0 && triggerRoll == 0 && alt <= 1200.0)
+    {
+      triggerRoll = 1;
+      timeTriggerRoll = time;
+    } else if ((abs(rollInst) >= 100.0 && triggerRoll == 1 && (time - timeTriggerRoll) >= 5.0) || closer == 1) {
+      if (rollInst < 0.0){
+        turning(20.0);
+      } else {
+        turning(-20.0);
+      }
+      closer = 1;
+      std::cout << "SE RAPPROCHE DU THERMAL " << rollInst << " " << x << " " << y << std::endl;
+    } */
+    
+    if (updraft >= 0.5 && trigger == 0) {
+      closer = 0;
+      trigger = 1;
+      triggerTime = time;
+      goTo(x_t, y_t, x, y); //on continue vers la target
+    } else if (updraft >= 0.5 && trigger == 1 && (time - triggerTime) < deltaTime) {
+      trigger = 1;
+      //rollTest += rollInst; //permet de confirmer que le roll va dans un sens ou l'autre et pas juste en un point qui peut fausser le jugement.
+      goTo(x_t, y_t, x, y);
+    } else if (updraft >= 0.5 && trigger == 1 && (time - triggerTime) >= deltaTime) { // ON EST DANS LE THERMAL
+      turn = 1; //temps que la nouvelle fonction n'a pas fini, on met turn = 1 pour pas repasser par toutes les conditions
+      altInit = Propagate->GetAltitudeASL()*0.3048;
+      timeInit = time; //Ne pas oublier de remettre a zéro qd NEWFCT a fini!
+      trigger = 0;
+      rollTest = rollInst;
+      inThermal(updraft, time, x, y, x_t, y_t);
+      std::cout << "<<<<<<<<< START TURNING >>>>>>>>>" << x << " " << y << " " << rollTest << std::endl;
+    } else {
+      trigger = 0; //aucune pompe valable de détectée
+      goTo(x_t, y_t, x, y); //on continue vers la target
+    }
+  }
+  sideslipController(x, y); //Tjrs avoir la yaw string droite!
+}
+
+void FGAuxiliary::inThermal(double updraft, double time, double x, double y, double x_t, double y_t){ //Va gérer tout ce qui se passe une fois dans une pompe valable. 
+  double rollInst = boxMoment(1);
+  if ((updraft >= 1.2 || ok == 1 || abs(rollInst) >= 250.0) && altInit <= 5000.0)
+  {
+    ok = 1; // on a lancé la procédure de centrage. on force la fonction a bien s'exécuter avec variable ok.
+    thermalCentering(updraft, time, x, y, x_t, y_t);
+    //std::cout << "<<<<<<<<< ASSEZ DE UPDRAFT >>>>>>>>>" << x << " " << y << " " << std::endl;
+  } 
+  else if (updraft < 0.0) 
+  {
+    turn = 0; //on annule la recherche de pompe on contiune.
+    ok = 0;
+    altInit = 0.0;
+    timeInit = 0.0;
+    rollTest = 0.0;
+    goTo(x_t, y_t, x, y);
+    std::cout << "<<<<<<<<< PAS ASSEZ DE UPDRAFT >>>>>>>>>" << x << " " << y << " " << std::endl;
+  }
+  else {
+    goTo(x_t, y_t, x, y);
+  }
+}
+
+void FGAuxiliary::thermalCentering(double updraft, double time, double x, double y, double x_t, double y_t){
+  double rollInst = boxMoment(1);
+  double deltaUpdraft = (updraft - prevUpdraft);
+  double deltaTime = 1.0;
+
+  double altInst = Propagate->GetAltitudeASL()*0.3048;
+
+  if (rollTest >= 0) {
+    direction = -1;
+  } else {
+    direction = 1;
+  }
+
+  if (deltaUpdraft <= -0.01 && triggerDown == 0) 
+  {
+    timeDown = time;
+    triggerDown = 1;
+    timeUp = 0.0;
+    triggerUp = 0;
+    turning(direction * 20.0);
+    //std::cout << "<<<<<<<<< TRIGGER DOWN >>>>>>>>> " << deltaUpdraft << " triggerDown = " << triggerDown << std::endl;
+  } else if (deltaUpdraft <= -0.005 && triggerDown == 1 && (time - timeDown) < deltaTime)
+  {
+    turning(direction * 20.0);
+    //std::cout << "<<<<<<<<< TRIGGER DOWN 1>>>>>>>>> " << "updraft = " <<updraft<< " prev = " << prevUpdraft << std::endl;
+  }
+  else if (deltaUpdraft <= -0.005 && triggerDown == 1 && (time - timeDown) >= deltaTime) 
+  {
+    turning(direction * 50.0); //steep turn 
+    //std::cout << "<<<<<<<<< TURN 55deg >>>>>>>>> " << x << " " << y << " " << time << std::endl;
+  } 
+  else if (deltaUpdraft > 0.01 && triggerUp == 0)
+  {
+    timeDown = 0.0;
+    triggerDown = 0;
+    timeUp = time;
+    triggerUp = 1;
+    turning(direction * 20.0);
+    //std::cout << "<<<<<<<<< TRIGGER UP >>>>>>>>> " << deltaUpdraft << std::endl;
+  } 
+  else if (deltaUpdraft > 0.005 && triggerUp == 1 && (time - timeUp) < deltaTime) {
+    turning(direction * 20.0);
+    //std::cout << "<<<<<<<<< TRIGGER Up 1>>>>>>>>> " << deltaUpdraft << std::endl;
+  }
+  else if (deltaUpdraft > 0.005 && triggerUp == 1 && (time - timeUp) >= deltaTime) 
+  {
+    turning(direction * 3.0); 
+    //std::cout << "<<<<<<<<< TURN 3 deg >>>>>>>>> " << x << " " << y << " " << time << std::endl;
+  } else {
+    turning(direction * 20.0);
+    triggerDown = 0;
+    triggerUp = 0;
+    timeDown = 0.0;
+    timeUp = 0.0;
+    //std::cout << "<<<<<<<<< TURN 20deg >>>>>>>>> " << x << " " << y << " " << time << std::endl; //on confirme qu'il faut 25 deg
+  }
+
+  /* if (altInit >= 1000.0 && (altInst - altInit) >= 200.0) { //si on a monté assez on sort de la pompe et on continue vers la target
+    turn = 0;
+    ok = 0;
+    goTo(x_t, y_t, x, y);
+    exitTime = time;
+    altInit = 0.0;
+    timeInit = 0.0;
+    rollTest = 0.0;
+    std::cout << "|||||||||||||||||| ON A MONTE DE 200M ||||||||||||||||" << std::endl;
+  } else if ((time - timeInit) >= 3000.0) { //si on a monté assez on sort de la pompe et on continue vers la target
+    turn = 0;
+    ok = 0;
+    goTo(x_t, y_t, x, y);
+    exitTime = time;
+    altInit = 0.0;
+    timeInit = 0.0;
+    rollTest = 0.0;
+    std::cout << "|||||||||||||||||| ON A TOURNE 300sec ||||||||||||||||" << std::endl;
+  } else if (updraft <= -0.5) {
+    turn = 0;
+    ok = 0;
+    goTo(x_t, y_t, x, y);
+    altInit = 0.0;
+    timeInit = 0.0;
+    rollTest = 0.0;
+    std::cout << "|||||| UPDRAFT TROP PETIT ||||||| updraft = " << updraft << " " << x << " " << y << std::endl;
+  } else if ((time - timeInit) >= 150.0 && (altInst - altInit) <= 50.0) {
+    turn = 0;
+    ok = 0;
+    goTo(x_t, y_t, x, y);
+    altInit = 0.0;
+    timeInit = 0.0;
+    rollTest = 0.0;
+    std::cout << "|||||||||||||||||| CA DEGAGE ||||||||||||||||" << std::endl;
+  } else if (altInit < 1000.0 && (altInst - altInit) >= 400.0) {
+    turn = 0;
+    ok = 0;
+    goTo(x_t, y_t, x, y);
+    exitTime = time;
+    altInit = 0.0;
+    timeInit = 0.0;
+    rollTest = 0.0;
+    std::cout << "|||||||||||||||||| ON A MONTE DE 400M ||||||||||||||||" << std::endl;
+  } */
+
+  exitStrategy(updraft, time, x, y, x_t, y_t);
+
+  prevUpdraft = updraft;
+}
+
+void FGAuxiliary::exitStrategy(double updraft, double time, double x, double y, double x_t, double y_t) {
+  double altInst = Propagate->GetAltitudeASL()*0.3048;
+  double errorHeading = getPsiError(x, y, x_t, y_t);
+
+  if (altInst >= altMax) {
+    altMax = altInst;
+  }
+
+  std::cout << altMax - altInst << " " << x << " " << y << std::endl;
+
+  if (altInit >= 1200.0) {
+    if ((altInst - altInit) >= 185.0 && (altInst - altInit) <= 215.0 && abs(errorHeading) <= 0.1)
+    {
+      goTo(x_t, y_t, x, y);
+      turn = 0;
+      ok = 0;
+      exitTime = time;
+      altInit = 0.0;
+      timeInit = 0.0;
+      rollTest = 0.0;
+      altMax = 0.0;
+      std::cout << "<<<<<<<<< 200m up >>>>>>>>> " << x << " " << y << " " << time << std::endl;
+    } else if ((time - timeInit) >= 300.0 && altMax - altInst >= 25.0 && abs(errorHeading) <= 0.1) 
+    {
+      goTo(x_t, y_t, x, y);
+      turn = 0;
+      ok = 0;
+      exitTime = time;
+      altInit = 0.0;
+      timeInit = 0.0;
+      rollTest = 0.0;
+      altMax = 0.0;
+      std::cout << "<<<<<<<<< 300s turning >>>>>>>>> " << x << " " << y << " " << time << std::endl;
+    }
+  } else if (altInit < 1200.0) {
+    if ((altInst - altInit) >= 385.0 && (altInst - altInit) <= 415.0 && abs(errorHeading) <= 0.1)
+    {
+      goTo(x_t, y_t, x, y);
+      turn = 0;
+      ok = 0;
+      exitTime = time;
+      altInit = 0.0;
+      timeInit = 0.0;
+      rollTest = 0.0;
+      altMax = 0.0;
+      std::cout << "<<<<<<<<< 400m up >>>>>>>>> " << x << " " << y << " " << time << std::endl;
+    } else if ((time - timeInit) >= 500.0 && altMax - altInst >= 25.0 && abs(errorHeading) <= 0.1) 
+    {
+      goTo(x_t, y_t, x, y);
+      turn = 0;
+      ok = 0;
+      exitTime = time;
+      altInit = 0.0;
+      timeInit = 0.0;
+      rollTest = 0.0;
+      altMax = 0.0;
+      std::cout << "<<<<<<<<< 500s up >>>>>>>>> " << x << " " << y << " " << time << std::endl;
+    }
+  }
+  if (altMax - altInst >= 75.0 && abs(errorHeading) <= 0.1) {
+    goTo(x_t, y_t, x, y);
+    turn = 0;
+    ok = 0;
+    exitTime = time;
+    altInit = 0.0;
+    timeInit = 0.0;
+    rollTest = 0.0;
+    altMax = 0.0;
+    std::cout << "<<<<<<<<< ça redescend >>>>>>>>> " << x << " " << y << " " << time << std::endl;
+  } else if (altInit - altInst >= 75.0 && abs(errorHeading) <= 0.1) {
+    goTo(x_t, y_t, x, y);
+    turn = 0;
+    ok = 0;
+    exitTime = time;
+    altInit = 0.0;
+    timeInit = 0.0;
+    rollTest = 0.0;
+    altMax = 0.0;
+    std::cout << "<<<<<<<<< c'est ciao >>>>>>>>> " << x << " " << y << " " << time << std::endl;
+  }
+
+  
+
+  /* if (altInit >= 1000.0 && (altInst - altInit) >= 200.0) { //si on a monté assez on sort de la pompe et on continue vers la target
+    turn = 0;
+    ok = 0;
+    goTo(x_t, y_t, x, y);
+    exitTime = time;
+    altInit = 0.0;
+    timeInit = 0.0;
+    rollTest = 0.0;
+    std::cout << "|||||||||||||||||| ON A MONTE DE 200M ||||||||||||||||" << std::endl;
+  } else if ((time - timeInit) >= 3000.0) { //si on a monté assez on sort de la pompe et on continue vers la target
+    turn = 0;
+    ok = 0;
+    goTo(x_t, y_t, x, y);
+    exitTime = time;
+    altInit = 0.0;
+    timeInit = 0.0;
+    rollTest = 0.0;
+    std::cout << "|||||||||||||||||| ON A TOURNE 300sec ||||||||||||||||" << std::endl;
+  } else if (updraft <= -0.5) {
+    turn = 0;
+    ok = 0;
+    goTo(x_t, y_t, x, y);
+    altInit = 0.0;
+    timeInit = 0.0;
+    rollTest = 0.0;
+    std::cout << "|||||| UPDRAFT TROP PETIT ||||||| updraft = " << updraft << " " << x << " " << y << std::endl;
+  } else if ((time - timeInit) >= 150.0 && (altInst - altInit) <= 50.0) {
+    turn = 0;
+    ok = 0;
+    goTo(x_t, y_t, x, y);
+    altInit = 0.0;
+    timeInit = 0.0;
+    rollTest = 0.0;
+    std::cout << "|||||||||||||||||| CA DEGAGE ||||||||||||||||" << std::endl;
+  } else if (altInit < 1000.0 && (altInst - altInit) >= 400.0) {
+    turn = 0;
+    ok = 0;
+    goTo(x_t, y_t, x, y);
+    exitTime = time;
+    altInit = 0.0;
+    timeInit = 0.0;
+    rollTest = 0.0;
+    std::cout << "|||||||||||||||||| ON A MONTE DE 400M ||||||||||||||||" << std::endl;
+  } */
+}
+
+void FGAuxiliary::turning(double angle)
+{ 
+  double timeTurn = FDMExec->GetSimTime();
+  // Variables de PID
+  double roll_error = 0.0;
+ 
+  // Gains PID
+  double roll_p_gain = 1.0;
+  double roll_d_gain = 42.0;
+  double roll_i_gain = 0.03;
+ 
+  double roll_angle = FDMExec->GetPropagate()->GetEuler(1);//* 180/PI;
+  double desired_roll_angle = (angle * PI) / 180;
+  roll_error = desired_roll_angle - roll_angle;
+  ajouterDonnees("Zzz_rollError", roll_error);
+  ajouterDonnees("Zzz_timeTurn", timeTurn);
+  
+ 
+  // Terme proportionnel
+  double p_term = roll_p_gain * roll_error;
+
+  double d_term;
+  if (oldRollTurn == 0.0) {
+    d_term = 0.0;
+  } else {
+    d_term = roll_d_gain * (roll_error - oldRollTurn);
+    if (abs(roll_error - oldRollTurn) > 0.1) {
+      d_term = 0.0;
+    }
+  }
+  oldRollTurn = roll_error;
+
+  double i_term;
+  integralRoll += roll_error;
+  i_term = roll_i_gain * integralRoll;
+
+  double aileron_command = p_term + d_term + i_term;
+ 
+  if (aileron_command < -1 ){aileron_command = -1;}
+ 
+  if (aileron_command > 1 ){aileron_command = 1;}
+
+  FDMExec->GetFCS()->SetDaCmd(aileron_command);
+  FDMExec->GetFCS()->SetDeCmd(-0.3);
+}
+
+double FGAuxiliary::getPsiError(double x1, double y1, double x2, double y2) {
+  double psi1 = FDMExec->GetPropagate()->GetEuler(3); //Yaw de l'avion
+  double psi2; //Angle entre axe nord et droite vers point visé
+
+  double errorPsi;
+
+  if (x1 <= x2)
+  {
+    if (y1 <= y2)
+    {
+      psi2 = atan2(x2-x1, y2-y1);
+      if (psi1 >= PI+psi2 && psi1 < 2*PI)
+      {
+        errorPsi = -((2*PI - psi1) + psi2); //négatif car on veut qu'il aille à droite
+      } else 
+      {
+        errorPsi = psi1 - psi2;
+      }
+      
+    } 
+    else 
+    {
+      psi2 = PI - atan2(x2-x1, y1-y2);
+      if (psi1 >= PI+psi2 && psi1 < 2*PI)
+      {
+        errorPsi = -((2*PI - psi1) + psi2);
+      } 
+      else 
+      {
+        errorPsi = psi1 - psi2;
+      }
+    }
+  } 
+  else 
+  {
+    if (y1 <= y2)
+    {
+      psi2 = 2*PI - atan2(x1-x2, y2-y1);
+      if (psi1 >= 0 && psi1 < psi2-PI)
+      {
+        errorPsi = psi1 + (2*PI - psi2);
+      }
+      else
+      {
+        errorPsi = psi1 - psi2;
+      }
+    } else 
+    {
+      psi2 = PI + atan2(x1-x2, y1-y2);
+      if (psi1 >= 0 && psi1 < psi2-PI)
+      {
+        errorPsi = psi1 + (2*PI - psi2);
+      }
+      else
+      {
+        errorPsi = psi1 - psi2;
+      }
+    }
+  }
+  return errorPsi;
 }
 
 } // namespace JSBSim

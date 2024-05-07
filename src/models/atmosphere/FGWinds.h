@@ -163,6 +163,10 @@ CLASS DOCUMENTATION
 CLASS DECLARATION
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
 
+// FONCTION RAJOUTEES
+class FGPropagate;
+
+
 class FGWinds : public FGModel {
 public:
 
@@ -406,6 +410,23 @@ private:
 
   virtual void bind(void);
   void Debug(int from) override;
+
+
+ // FONCTION RAJOUTEES
+  FGPropagate* Propagate;
+
+
+  void loadgrid();
+  double grid[3][257];
+  
+  void loaduwind();
+  double u[128][257][257];
+
+  void loadvwind();
+  double v[128][257][257];
+
+  void loadwwind();
+  double w[128][257][257];
 };
 
 } // namespace JSBSim

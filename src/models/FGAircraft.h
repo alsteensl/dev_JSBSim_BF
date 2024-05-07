@@ -164,6 +164,8 @@ public:
 
   void SetWingArea(double S) {WingArea = S;}
 
+  std::vector<double> error;
+
   struct Inputs {
     FGColumnVector3 AeroForce;
     FGColumnVector3 PropForce;
@@ -193,6 +195,8 @@ private:
   void bind(void);
   void unbind(void);
   void Debug(int from) override;
+
+  
 };
 
 } // namespace JSBSim

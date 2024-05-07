@@ -46,6 +46,11 @@ INCLUDES
 #include "FGWinds.h"
 #include "FGFDMExec.h"
 #include "math/FGTable.h"
+#include <fstream>
+
+#include "models/FGAircraft.h"
+
+#include "models/FGAuxiliary.h"
 
 using namespace std;
 
@@ -74,6 +79,13 @@ constexpr double sqr(double x) { return x*x; }
 FGWinds::FGWinds(FGFDMExec* fdmex)
   : FGModel(fdmex), generator(fdmex->GetRandomGenerator())
 {
+
+  // AJOUTS POINTEUR 
+  std::shared_ptr<JSBSim::FGPropagate> propagatePtr = fdmex->GetPropagate(); // VOIR CHATGPT JSBSIM CODE EXPL
+  Propagate = propagatePtr.get(); //ELEMENT AJOUTE !!!!!!!!! 
+  
+  
+
   Name = "FGWinds";
 
   MagnitudedAccelDt = MagnitudeAccel = Magnitude = TurbDirection = 0.0;
@@ -125,6 +137,20 @@ bool FGWinds::InitModel(void)
 
   psiw = 0.0;
 
+  // ON LOAD DANS INITMODEL CAR LA FONCTION EST APPELEE QU'UNE SEULE FOIS PENDANT LA COMPILATION 
+  //
+  //
+  //  Grid = [  [Hauteurs de la grid ( 128 valeurs)],  [Longueur de la grid (257 valeurs)],  [Largeu de la grid (257 valeurs )]    ]
+  //  
+  //  u, v et w sont des tableaux à trois dimension  
+  // 
+
+  
+  //loaduwind();
+  //loadvwind();
+  //loadwwind();
+  //loadgrid();
+
   vGustNED.InitMatrix();
   vTurbulenceNED.InitMatrix();
   vCosineGust.InitMatrix();
@@ -145,7 +171,31 @@ bool FGWinds::Run(bool Holding)
   if (turbType != ttNone) Turbulence(in.AltitudeASL);
   if (oneMinusCosineGust.gustProfile.Running) CosineGust();
 
-  vTotalWindNED = vWindNED + vGustNED + vCosineGust + vTurbulenceNED;
+
+
+
+
+  // ECEF:  -7559861.763771 , 12098307.815341 , 15298479.890727 (x,y,z, in ft) initial
+
+  //double loc1 = Propagate->GetLocation(1)*0.3048 - (-7559861.763771*0.3048);
+  //double loc2 = Propagate->GetLocation(2)*0.3048 - (12098307.815341*0.3048);
+  //double loc3 = Propagate->GetLocation(3)*0.3048 - (15298479.890727*0.3048);
+
+  //double alt = Propagate->GetAltitudeASL()*0.3048 -30000*0.3048;
+
+  //std::cout << "avancement selon x depuis la position initiale =  " << loc1 << " [m]" << std::endl;
+  //std::cout << "avancement selon y  depuis la position initiale = " << loc2 << " [m]" <<std::endl;
+  //std::cout << "avancement selon z  depuis la position initiale =  " << loc3 << " [m]" <<std::endl;
+  //std::cout << "diff alt =  " << alt << " [m]" <<std::endl;
+  //std::cout << "loc2 =  " << loc2 << std::endl;
+  //std::cout << "loc3 =  " << loc3 << std::endl;
+
+
+  FGColumnVector3 addedWind = FDMExec->GetAuxiliary()->getCGWinds()* 3.28084;
+
+  //std::cout << "Wind " << addedWind << std::endl;
+
+  vTotalWindNED = vWindNED + vGustNED + vCosineGust + vTurbulenceNED+ addedWind;
 
    // psiw (Wind heading) is the direction the wind is blowing towards
   if (vWindNED(eX) != 0.0) psiw = atan2( vWindNED(eY), vWindNED(eX) );
@@ -167,7 +217,7 @@ void FGWinds::SetWindspeed(double speed)
   } else {
     vWindNED(eNorth) = speed * cos(psiw);
     vWindNED(eEast) = speed * sin(psiw);
-    vWindNED(eDown) = 0.0;
+    vWindNED(eDown) = 0;
   }
 }
 
@@ -610,5 +660,21 @@ void FGWinds::Debug(int from)
     }
   }
 }
+
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+//   
+//   On import les donnés de u, v, w et la grid
+//       
+//       
+//       
+
+
+
+
+
+
+
+
+
 
 } // namespace JSBSim
