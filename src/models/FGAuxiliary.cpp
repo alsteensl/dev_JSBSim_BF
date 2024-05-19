@@ -53,11 +53,30 @@ INCLUDES
 
 #include "FGFCS.h"
 
+/* For the communcation BF/JSB */
+#include <iostream>
+#include <cstring>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+
+#include <cstdlib>
+#include <cstdio>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+
+
+#define PORT 65431 
+#define ADDRESS "127.0.0.1"
+
 #define PI 3.141593
 
 using namespace std;
 
 namespace JSBSim {
+  int iter;
 
 /*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 CLASS IMPLEMENTATION
@@ -128,23 +147,29 @@ bool FGAuxiliary::InitModel(void)
   vMachUVW.InitMatrix();
   vEulerRates.InitMatrix();
 
-    // ON LOAD DANS INITMODEL CAR LA FONCTION EST APPELEE QU'UNE SEULE FOIS PENDANT LA COMPILATION 
-  //
-  //
-  //  Grid = [  [Hauteurs de la grid ( 128 valeurs)],  [Longueur de la grid (257 valeurs)],  [Largeu de la grid (257 valeurs )]    ]
-  //  
-  //  u, v et w sont des tableaux à trois dimension  
-  // 
+  /* printf("exited launch and connect \n");
+  FILE *positionFile = fopen("position.txt", "w");
+  if (positionFile == NULL) {
+      perror("Error opening windVel.txt");
+      exit(EXIT_FAILURE);
+  }
+
+  // Write initial values
+  fprintf(positionFile, "%d %lf %lf %lf %lf %lf %lf %lf %lf %lf\n", 0, 0., 0., 0., 0., 0., 0., 0., 0., 0.);
+
+  // Close file
+  fclose(positionFile); */ //ici
+  iter = 0;
 
   
-  loaduwind();
+  /* loaduwind();
   loadvwind();
   loadwwind();
-  loadgrid();
+  loadgrid(); */
 
-  std::cout << u[110][110][110] << std::endl;
+  /* std::cout << u[110][110][110] << std::endl;
   std::cout << v[110][110][110] << std::endl;
-  std::cout << w[110][110][110] << std::endl;
+  std::cout << w[110][110][110] << std::endl; */
 
   return true;
 }
@@ -162,6 +187,36 @@ int points;
 
 bool FGAuxiliary::Run(bool Holding)
 {
+  double VWind[3];
+  int flag = 1;
+  int iter_BF;
+  //sendBytes(sock, &flag, sizeof(int)) ;
+  //recvBytes(sock, &VWind, 3*sizeof(double));
+
+  double U, V, W;
+  double UG, VG, WG;
+  double UD, VD, WD;
+
+  iter += 1;
+
+  /////////////////////////////:
+  // Fonction qui renvoit la vitesse du vent de BF
+  /////////////////////////////:
+  /* while(iter != iter_BF){
+    FILE *windVelFile = fopen("windVel.txt", "r");
+    if (windVelFile == NULL) {
+        perror("Error opening WindVel.txt");
+        exit(EXIT_FAILURE);
+    }
+    while (fscanf(windVelFile, "%d %lf %lf %lf %lf %lf %lf %lf %lf %lf", &iter_BF, &UG, &VG, &WG, &U, &V, &W, &UD, &VD, &WD) != 4) {
+        perror("Error reading from WindVel.txt");
+        fclose(windVelFile);
+        windVelFile = fopen("windVel.txt", "r");
+        //exit(EXIT_FAILURE);
+    }
+    fclose(windVelFile);
+  } */ //ici
+  
   if (FGModel::Run(Holding)) return true; // return true if error returned from base class
   if (Holding) return false;
 
@@ -377,6 +432,27 @@ bool FGAuxiliary::Run(bool Holding)
   ajouterDonnees("Zzz_Time", time);
   ajouterDonnees("Zzz_Roll", rolleee);
 
+  /* FILE *positionFile = fopen("position.txt", "w");
+  if (positionFile == NULL) {
+      perror("Error opening position.txt for writing");
+      exit(EXIT_FAILURE);
+  }
+  int fd = fileno(positionFile);
+  if (flock(fd, LOCK_EX) == -1) {
+      perror("Error locking file");
+      exit(EXIT_FAILURE);
+  }
+
+  // Write updated values to windVel.txt
+  fprintf(positionFile, "%d %lf %lf %lf\n", iter, X, Y, Z);
+    // Release the lock
+  if (flock(fd, LOCK_UN) == -1) {
+      perror("Error unlocking file");
+      exit(EXIT_FAILURE);
+  }
+
+  // Close windVel.txt
+  fclose(positionFile); */ //ici
 
   return false;
 }
