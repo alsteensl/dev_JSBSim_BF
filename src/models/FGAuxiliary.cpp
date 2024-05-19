@@ -147,7 +147,7 @@ bool FGAuxiliary::InitModel(void)
   vMachUVW.InitMatrix();
   vEulerRates.InitMatrix();
 
-  /* printf("exited launch and connect \n");
+  printf("exited launch and connect \n");
   FILE *positionFile = fopen("position.txt", "w");
   if (positionFile == NULL) {
       perror("Error opening windVel.txt");
@@ -158,7 +158,7 @@ bool FGAuxiliary::InitModel(void)
   fprintf(positionFile, "%d %lf %lf %lf %lf %lf %lf %lf %lf %lf\n", 0, 0., 0., 0., 0., 0., 0., 0., 0., 0.);
 
   // Close file
-  fclose(positionFile); */ //ici
+  fclose(positionFile); //ici
   iter = 0;
 
   
@@ -202,7 +202,7 @@ bool FGAuxiliary::Run(bool Holding)
   /////////////////////////////:
   // Fonction qui renvoit la vitesse du vent de BF
   /////////////////////////////:
-  /* while(iter != iter_BF){
+  while(iter != iter_BF){
     FILE *windVelFile = fopen("windVel.txt", "r");
     if (windVelFile == NULL) {
         perror("Error opening WindVel.txt");
@@ -215,7 +215,7 @@ bool FGAuxiliary::Run(bool Holding)
         //exit(EXIT_FAILURE);
     }
     fclose(windVelFile);
-  } */ //ici
+  } //ici
   
   if (FGModel::Run(Holding)) return true; // return true if error returned from base class
   if (Holding) return false;
@@ -432,7 +432,7 @@ bool FGAuxiliary::Run(bool Holding)
   ajouterDonnees("Zzz_Time", time);
   ajouterDonnees("Zzz_Roll", rolleee);
 
-  /* FILE *positionFile = fopen("position.txt", "w");
+  FILE *positionFile = fopen("position.txt", "w");
   if (positionFile == NULL) {
       perror("Error opening position.txt for writing");
       exit(EXIT_FAILURE);
@@ -452,7 +452,7 @@ bool FGAuxiliary::Run(bool Holding)
   }
 
   // Close windVel.txt
-  fclose(positionFile); */ //ici
+  fclose(positionFile); //ici
 
   return false;
 }
