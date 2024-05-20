@@ -126,7 +126,7 @@ FGAuxiliary::FGAuxiliary(FGFDMExec* fdmex) : FGModel(fdmex)
 bool FGAuxiliary::InitModel(void)
 {
   if (!FGModel::InitModel()) return false;
-
+  std::cout << "test1" << std::endl;
   pt = in.Pressure;
   tat = in.Temperature;
   tatc = RankineToCelsius(tat);
