@@ -169,6 +169,9 @@ bool FGAuxiliary::InitModel(void)
   loadwwind();
   loadgrid(); */
 
+  std::cout << "testBF" << std::endl;
+  printf("testBF2");
+
   /* std::cout << u[110][110][110] << std::endl;
   std::cout << v[110][110][110] << std::endl;
   std::cout << w[110][110][110] << std::endl; */
