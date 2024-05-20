@@ -431,18 +431,18 @@ bool FGAuxiliary::Run(bool Holding)
       exit(EXIT_FAILURE);
   }
   int fd = fileno(positionFile);
-  if (flock(fd, LOCK_EX) == -1) {
+  /* if (flock(fd, LOCK_EX) == -1) {
       perror("Error locking file");
       exit(EXIT_FAILURE);
-  }
+  } */
 
   // Write updated values to position.txt
   fprintf(positionFile, "%d %lf %lf %lf %lf %lf %lf %lf %lf %lf\n", iter, LA, LN, LE, CGA, CGN, CGE, RA, RN, RE);
     // Release the lock
-  if (flock(fd, LOCK_UN) == -1) {
+  /* if (flock(fd, LOCK_UN) == -1) {
       perror("Error unlocking file");
       exit(EXIT_FAILURE);
-  }
+  } */
 
   // Close windVel.txt
   fclose(positionFile); //ici
