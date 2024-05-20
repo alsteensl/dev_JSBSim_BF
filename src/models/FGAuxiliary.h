@@ -283,6 +283,7 @@ public:
 
   FGColumnVector3 resultMoment();
   FGColumnVector3 getCGWinds();
+  double getPositions();
 
   double newEastTarget;
   double newNorthTarget;
@@ -408,7 +409,6 @@ private:
   double oldRollTurn = 0.0;
   double integralRoll = 0.0;
 
-  int exit;
   double exitTime;
 
   double alt;

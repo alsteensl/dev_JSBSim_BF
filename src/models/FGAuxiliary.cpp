@@ -59,6 +59,7 @@ INCLUDES
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <stdlib.h> 
 
 #include <cstdlib>
 #include <cstdio>
@@ -321,7 +322,6 @@ bool FGAuxiliary::Run(bool Holding)
   double dist_rel = GetDistanceRelativePosition() * 0.3048;
 
   alt = Propagate->GetAltitudeASL()*0.3048;
-  ajouterDonnees("Zzz_Alt",alt);
 
   double lon_deg = Propagate->GetLongitudeDeg();
 
@@ -379,9 +379,6 @@ bool FGAuxiliary::Run(bool Holding)
     East_pos = dist_long;
     North_pos = dist_lat;
   }
-
-  ajouterDonnees("Zzz_North", North_pos);
-  ajouterDonnees("Zzz_East", East_pos);
   
   //goTo(East_target, North_target, East_pos, North_pos);
   //FDMExec->GetFCS()->SetDeCmd(-0.15);
@@ -417,20 +414,19 @@ bool FGAuxiliary::Run(bool Holding)
   }
 
   autopilot2(updraft, time, East_pos, North_pos, East_target, North_target);
-  
-  /* if (time >= 20) {
-    turning(20.0);
-  } else {
-    goTo(4000.0 , 5000.0, East_pos, North_pos);
-  } */
 
-  //std::cout << time << "x_pos = " << East_pos << " y_pos = " << North_pos << std::endl;
+  // ON SUIT LE REFERENCE BF ALT NORD EST. CHANGER DANS ECRITURE DE TXT SI CHANGEMENT DANS BF.
+  double LA, LN, LE, CGA, CGN, CGE, RA, RN, RE = getPositions();
 
   double a_R = FDMExec->GetFCS()->GetDaCmd();
   double rolleee = FDMExec->GetPropagate()->GetEuler(1);
   ajouterDonnees("Zzz_aR", a_R);
   ajouterDonnees("Zzz_Time", time);
   ajouterDonnees("Zzz_Roll", rolleee);
+
+  ajouterDonnees("Zzz_North", North_pos);
+  ajouterDonnees("Zzz_East", East_pos);
+  ajouterDonnees("Zzz_Alt", alt);
 
   FILE *positionFile = fopen("position.txt", "w");
   if (positionFile == NULL) {
@@ -444,7 +440,7 @@ bool FGAuxiliary::Run(bool Holding)
   }
 
   // Write updated values to windVel.txt
-  fprintf(positionFile, "%d %lf %lf %lf\n", iter, X, Y, Z);
+  fprintf(positionFile, "%d %lf %lf %lf %lf %lf %lf %lf %lf %lf\n", iter, LA, LN, LE, CGA, CGN, CGE, RA, RN, RE);
     // Release the lock
   if (flock(fd, LOCK_UN) == -1) {
       perror("Error unlocking file");
@@ -1152,12 +1148,12 @@ FGMatrix33 TransfoNED2B;
 
 FGColumnVector3 boxMoment;
 FGColumnVector3 liftForce;
+double positions[3][3];
 
 void FGAuxiliary::getRollMoment(double hauteur, double longueur, double largeur, double longi, double lat, int n, double largeur_0, double longueur_0){
   double width = in.Wingspan*0.3048;
   double dw = width/(2*n);
   double D;
-  double positions[2*n+1][3];
   double vBoite[2*n+1][3];
   
   double yaw = Propagate->GetEuler(3); //ordre yaw, pitch, roll
@@ -1275,6 +1271,22 @@ FGColumnVector3 FGAuxiliary::resultMoment() {
 
 FGColumnVector3 FGAuxiliary::getCGWinds(){
   return velCGBox;
+}
+
+double FGAuxiliary::getPositions(){
+  double posLN = positions[0][0];
+  double posLE = positions[0][1];
+  double posLA = positions[0][2];
+
+  double posCGN = positions[1][0];
+  double posCGE = positions[1][1];
+  double posCGA = positions[1][2];
+
+  double posRN = positions[2][0];
+  double posRE = positions[2][1];
+  double posRA = positions[2][2];
+
+  return posLA, posLN, posLE, posCGA, posCGN, posCGE, posRA, posRN, posRE;
 }
 
 void FGAuxiliary::goTo(double x2, double y2, double x1, double y1) {
