@@ -1359,9 +1359,9 @@ void FGFDMExec::Debug(int from)
   if (debug_lvl & 1 && IdFDM == 0) { // Standard console startup message output
     if (from == 0) { // Constructor
       cout << "\n\n     "
-           << "JSBSim Flight Dynamics Model v" << JSBSim_version << endl;
+           << "JSBSim Flight Dynamics Model V" << JSBSim_version << endl;
       cout << "            [JSBSim-ML v" << needed_cfg_version << "]\n\n";
-      cout << "JSBSim startup beginning ...\n\n";
+      cout << "JSBSim startup beginning !\n\n";
       if (disperse == 1) cout << "Dispersions are ON." << endl << endl;
     } else if (from == 3) {
       cout << "\n\nJSBSim startup complete\n\n";
