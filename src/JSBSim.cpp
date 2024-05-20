@@ -315,7 +315,7 @@ int main(int argc, char* argv[])
 int real_main(int argc, char* argv[])
 {
   // *** INITIALIZATIONS *** //
-
+  printf("started init");
   ScriptName = "";
   AircraftName = "";
   ResetName = "";
