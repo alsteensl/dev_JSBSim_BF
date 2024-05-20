@@ -1042,106 +1042,12 @@ double* FGAuxiliary::rechercheNoeuds(double hauteur, double longueur, double lar
     return velocities;
 }
 
-/* void FGAuxiliary::discretisation(double x, double y, double z, int n){
-  double width = in.Wingspan*0.3048;
-  double dw = width/(2*n);
-  double D;
-  double positions[2*n+1][3];
-  
-  double yaw = Propagate->GetEuler(ePhi);
-  double pitch = Propagate->GetEuler(eTht);
-  double roll = Propagate->GetEuler(ePsi);
-
-  double theta = 3.14159/2 + yaw;
-  double phi = 3.14159/2 - roll;
-
-  for (int i = 0; i < 2*n+1; i++)
-  {
-    if (i<=n)
-    {
-      D = (n-i)*dw;
-      positions[i][0] = y - D*sin(phi)*cos(theta);
-      positions[i][1] = z - D*sin(phi)*sin(theta);
-      positions[i][2] = x - D*cos(phi);
-    } else {
-      D = (i-n)*dw;
-      positions[i][0] = y + D*sin(phi)*cos(theta);
-      positions[i][1] = z + D*sin(phi)*sin(theta);
-      positions[i][2] = x + D*cos(phi);
-    }
-    
-  }
-  std::cout << "yaw: " << yaw << " pitch: " << pitch << " roll: " << roll << std::endl;
-  std::cout << "Position tip gauche : (" << positions[0][0] << "," << positions[0][1] << "," << positions[0][2] << ")" << std::endl;
-  std::cout << "(" << positions[1][0] << "," << positions[1][1] << "," << positions[1][2] << ")" << std::endl;
-  std::cout << "(" << positions[2][0] << "," << positions[2][1] << "," << positions[2][2] << ")" << std::endl;
-  std::cout << "(" << positions[3][0] << "," << positions[3][1] << "," << positions[3][2] << ")" << std::endl;
-  std::cout << "Position CG : (" << positions[n][0] << "," << positions[n][1] << "," << positions[n][2] << ")" << std::endl;
-  std::cout << "(" << positions[5][0] << "," << positions[5][1] << "," << positions[5][2] << ")" << std::endl;
-  std::cout << "(" << positions[6][0] << "," << positions[6][1] << "," << positions[6][2] << ")" << std::endl;
-  std::cout << "(" << positions[7][0] << "," << positions[7][1] << "," << positions[7][2] << ")" << std::endl;
-  std::cout << "Position tip droit : (" << positions[2*n][0] << "," << positions[2*n][1] << "," << positions[2*n][2] << ")" << std::endl;
-  std::cout << "-----------------------------------------------------------------------------" << std::endl;
-
-} */
-
 FGColumnVector3 velCG;
 FGColumnVector3 velCGBox;
 FGColumnVector3 vPointNED;
 FGColumnVector3 vPointBody;
 FGColumnVector3 vFlow;
 FGMatrix33 TransfoNED2B;
-
-
-/* void FGAuxiliary::dynamics(int vBoite[5][3], int n) { //n le nombre d'éléments de par et d'autre CG
-  double lift[2*n+1];
-
-  double rho = (FDMExec->GetAtmosphere()->GetDensity())*515.378818;
-  double b = in.Wingspan*0.3048;
-  double c = in.Wingchord*0.3048; //constant pour le moment
-	double S   = b*c;
-  double AR = b*b/S;
-
-  double width = in.Wingspan*0.3048;
-  double dw = width/(2*n);
-
-  double a_e;
-  double C_l;
-  double U_inf;
-
-  velCG = in.vUVW*0.3048; //in BODY frame (?)
-  TransfoNED2B = in.Tl2b;
-
-  for (int i = 0; i < 2*n+1; i++)
-  {
-    vPoint(1) = vBoite[i][1];
-    vPoint(2) = -vBoite[i][2];
-    vPoint(3) = -vBoite[i][0];
-    vFlow = velCG - TransfoNED2B*vPoint;
-    
-    a_e = atan2(vFlow(3), vFlow(1));
-    C_l = 2*3.141593*(AR/(AR+2))*a_e;
-    U_inf = sqrt(vFlow(3)*vFlow(3) + vFlow(1)*vFlow(1));
-
-    lift[i] = 0.5*rho*U_inf*U_inf*C_l*c;
-  }
-
-  double rollMoment = 0.0;
-  for (int i = 0; i < 2*n+1; i++)
-  {
-    if (i<n)
-    {
-      rollMoment -= lift[i]*(n-i)*dw;
-    } else {
-      rollMoment += lift[i]*(i-n)*dw; //lift partie droite de l'aile contribue négativement au rolling moment mais il y a un moins dans la formule.
-    }
-  }
-
-  std::cout << "-----------------------------------------------------------------------------" << std::endl;
-  std::cout << "Rolling moment = " << rollMoment << " Nm" << std::endl;
-  std::cout << "-----------------------------------------------------------------------------" << std::endl;
-
-} */
 
 FGColumnVector3 boxMoment;
 FGColumnVector3 liftForce;
@@ -1201,15 +1107,15 @@ void FGAuxiliary::getRollMoment(double hauteur, double longueur, double largeur,
     vBoite[i][1] = vel[1];
     vBoite[i][2] = vel[2];
     //std::cout << "vBoite = " << vBoite[i][0] << " " << vBoite[i][1] << " " << vBoite[i][2] << std::endl; */
-    vBoite[0][0] = VG;
-    vBoite[0][1] = WG;
-    vBoite[0][2] = UG;
-    vBoite[1][0] = V;
-    vBoite[1][1] = W;
-    vBoite[1][2] = U;
-    vBoite[2][0] = VD;
-    vBoite[2][1] = WD;
-    vBoite[2][2] = UD;
+    vBoite[0][0] = UG;
+    vBoite[0][1] = VG;
+    vBoite[0][2] = WG;
+    vBoite[1][0] = U;
+    vBoite[1][1] = V;
+    vBoite[1][2] = W;
+    vBoite[2][0] = UD;
+    vBoite[2][1] = VD;
+    vBoite[2][2] = WD;
   }
 
   for (int i = 0; i < 2*n+1; i++)
