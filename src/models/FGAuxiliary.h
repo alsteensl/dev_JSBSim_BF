@@ -447,6 +447,11 @@ private:
   double oldEast = 0.0;
   double oldNorth = 0.0;
   double oldSideslip = 0.0;
+
+  //velocities from BF
+  double U, V, W;
+  double UG, VG, WG;
+  double UD, VD, WD;
 };
 
 } // namespace JSBSim

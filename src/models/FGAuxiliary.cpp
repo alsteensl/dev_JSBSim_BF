@@ -195,10 +195,6 @@ bool FGAuxiliary::Run(bool Holding)
   //sendBytes(sock, &flag, sizeof(int)) ;
   //recvBytes(sock, &VWind, 3*sizeof(double));
 
-  double U, V, W;
-  double UG, VG, WG;
-  double UD, VD, WD;
-
   iter += 1;
 
   /////////////////////////////:
@@ -440,7 +436,7 @@ bool FGAuxiliary::Run(bool Holding)
       exit(EXIT_FAILURE);
   }
 
-  // Write updated values to windVel.txt
+  // Write updated values to position.txt
   fprintf(positionFile, "%d %lf %lf %lf %lf %lf %lf %lf %lf %lf\n", iter, LA, LN, LE, CGA, CGN, CGE, RA, RN, RE);
     // Release the lock
   if (flock(fd, LOCK_UN) == -1) {
@@ -1200,11 +1196,20 @@ void FGAuxiliary::getRollMoment(double hauteur, double longueur, double largeur,
 
   for (int i = 0; i < 2*n+1; i++)
   {
-    double* vel = rechercheNoeuds(positions[i][2], positions[i][0], positions[i][1], largeur_0, longueur_0, longi, lat);
+    /* double* vel = rechercheNoeuds(positions[i][2], positions[i][0], positions[i][1], largeur_0, longueur_0, longi, lat);
     vBoite[i][0] = vel[0];
     vBoite[i][1] = vel[1];
     vBoite[i][2] = vel[2];
-    //std::cout << "vBoite = " << vBoite[i][0] << " " << vBoite[i][1] << " " << vBoite[i][2] << std::endl;
+    //std::cout << "vBoite = " << vBoite[i][0] << " " << vBoite[i][1] << " " << vBoite[i][2] << std::endl; */
+    vBoite[0][0] = VG;
+    vBoite[0][1] = WG;
+    vBoite[0][2] = UG;
+    vBoite[1][0] = V;
+    vBoite[1][1] = W;
+    vBoite[1][2] = U;
+    vBoite[2][0] = VD;
+    vBoite[2][1] = WD;
+    vBoite[2][2] = UD;
   }
 
   for (int i = 0; i < 2*n+1; i++)
