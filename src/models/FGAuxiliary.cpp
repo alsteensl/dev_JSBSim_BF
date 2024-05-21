@@ -209,7 +209,7 @@ bool FGAuxiliary::Run(bool Holding)
         perror("Error opening WindVel.txt");
         exit(EXIT_FAILURE);
     }
-    while (fscanf(windVelFile, "%d %lf %lf %lf %lf %lf %lf %lf %lf %lf", &iter_BF, &UG, &VG, &WG, &U, &V, &W, &UD, &VD, &WD) != 4) {
+    while (fscanf(windVelFile, "%d %lf %lf %lf %lf %lf %lf %lf %lf %lf", &iter_BF, &UG, &VG, &WG, &U, &V, &W, &UD, &VD, &WD) != 10) {
         perror("Error reading from WindVel.txt");
         fclose(windVelFile);
         windVelFile = fopen("windVel.txt", "r");
