@@ -157,11 +157,11 @@ bool FGAuxiliary::InitModel(void)
   }
 
   // Write initial values
-  fprintf(positionFile, "%d %lf %lf %lf %lf %lf %lf %lf %lf %lf\n", 0, 0., 0., 0., 0., 0., 0., 0., 0., 0.);
+  fprintf(positionFile, "%d %lf %lf %lf %lf %lf %lf %lf %lf %lf\n", 1, 0., 0., 0., 0., 0., 0., 0., 0., 0.);
 
   // Close file
   fclose(positionFile); //ici
-  iter = 0;
+  iter = 1;
 
   
   /* loaduwind();
@@ -218,7 +218,7 @@ bool FGAuxiliary::Run(bool Holding)
     printf("IN LOOP JSB and iter = %d iterBF = %d\n", iter, iter_BF);;
   } //ici
   printf("OUT OF LOOP JSB and iter == iterBF\n");
-  iter += 1;
+  
   
   if (FGModel::Run(Holding)) return true; // return true if error returned from base class
   if (Holding) return false;
@@ -460,6 +460,7 @@ bool FGAuxiliary::Run(bool Holding)
   fclose(positionFile); //ici
 
   printf("FIN ITERATION \n");
+  iter += 1;
 
   return false;
 }
