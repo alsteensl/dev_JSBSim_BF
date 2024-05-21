@@ -194,7 +194,7 @@ bool FGAuxiliary::Run(bool Holding)
 {
   double VWind[3];
   int flag = 1;
-  int iter_BF;
+  int iter_BF = -1;
   //sendBytes(sock, &flag, sizeof(int)) ;
   //recvBytes(sock, &VWind, 3*sizeof(double));
 
@@ -215,7 +215,7 @@ bool FGAuxiliary::Run(bool Holding)
         //exit(EXIT_FAILURE);
     }
     fclose(windVelFile);
-    printf("OUT OF LOOP JSB and iter = %d iterBF = %d\n", iter, iter_BF);;
+    printf("IN LOOP JSB and iter = %d iterBF = %d\n", iter, iter_BF);;
   } //ici
   printf("OUT OF LOOP JSB and iter == iterBF\n");
   iter += 1;
