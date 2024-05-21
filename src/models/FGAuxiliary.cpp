@@ -215,7 +215,7 @@ bool FGAuxiliary::Run(bool Holding)
         //exit(EXIT_FAILURE);
     }
     fclose(windVelFile);
-    printf("OUT OF LOOP BF and iter = %d iterBF = %d\n", iter, iter_BF);;
+    printf("OUT OF LOOP JSB and iter = %d iterBF = %d\n", iter, iter_BF);;
   } //ici
   printf("OUT OF LOOP JSB and iter == iterBF\n");
   iter += 1;
@@ -257,7 +257,7 @@ bool FGAuxiliary::Run(bool Holding)
 
   UpdateWindMatrices();
 
-  //printf("Je suis dans auxiliary \n");
+  printf("Je suis dans auxiliary \n");
 
   Re = Vt * in.Wingchord / in.KinematicViscosity;
 
@@ -440,6 +440,8 @@ bool FGAuxiliary::Run(bool Holding)
       perror("Error locking file");
       exit(EXIT_FAILURE);
   } */
+
+  printf("BEFORE WRITING FILE\n");
 
   // Write updated values to position.txt
   fprintf(positionFile, "%d %lf %lf %lf %lf %lf %lf %lf %lf %lf\n", iter, LA, LN, LE, CGA, CGN, CGE, RA, RN, RE);
