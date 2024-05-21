@@ -419,6 +419,7 @@ bool FGAuxiliary::Run(bool Holding)
 
   // ON SUIT LE REFERENCE BF ALT NORD EST. CHANGER DANS ECRITURE DE TXT SI CHANGEMENT DANS BF.
   double LA, LN, LE, CGA, CGN, CGE, RA, RN, RE = getPositions();
+  printf("%d %f %f %f %f %f %f %f %f %f", iter, LA, LN, LE, CGA, CGN, CGE, RA, RN, RE);
 
   printf("Je suis avant l'ajout de données. \n");
 
@@ -457,6 +458,8 @@ bool FGAuxiliary::Run(bool Holding)
 
   // Close windVel.txt
   fclose(positionFile); //ici
+
+  printf("FIN ITERATION \n");
 
   return false;
 }
