@@ -161,7 +161,7 @@ bool FGAuxiliary::InitModel(void)
 
   // Close file
   fclose(positionFile); //ici
-  iter = 0;
+  iter = 1;
 
   
   /* loaduwind();
