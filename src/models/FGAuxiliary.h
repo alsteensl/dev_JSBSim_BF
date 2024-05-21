@@ -281,7 +281,7 @@ public:
 
   void SetAeroPQR(const FGColumnVector3& tt) { vAeroPQR = tt; }
 
-  typedef struct {
+  struct Pos {
     double posLN;
     double posLE;
     double posLA;
@@ -291,7 +291,7 @@ public:
     double posRN;
     double posRE;
     double posRA;
-  } Pos;
+  };
 
   FGColumnVector3 resultMoment();
   FGColumnVector3 getCGWinds();
