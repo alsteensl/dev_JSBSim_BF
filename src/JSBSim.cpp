@@ -501,8 +501,9 @@ int real_main(int argc, char* argv[])
   cout << endl << JSBSim::FGFDMExec::fggreen << JSBSim::FGFDMExec::highint
        << "---- JSBSim Execution beginning ... --------------------------------------------"
        << JSBSim::FGFDMExec::reset << endl << endl;
-
+  printf("BEFORE INITIAL RUN\n");
   result = FDMExec->Run();  // MAKE AN INITIAL RUN
+  printf("AFTER INITIAL RUN\n");
 
   if (suspend) FDMExec->Hold();
 
