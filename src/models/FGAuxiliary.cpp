@@ -157,7 +157,7 @@ bool FGAuxiliary::InitModel(void)
   }
 
   // Write initial values
-  fprintf(positionFile, "%d %lf %lf %lf %lf %lf %lf %lf %lf %lf\n", 1, 0., 0., 0., 0., 0., 0., 0., 0., 0.);
+  fprintf(positionFile, "%d %lf %lf %lf %lf %lf %lf %lf %lf %lf\n", 0, 0., 0., 0., 0., 0., 0., 0., 0., 0.);
 
   // Close file
   fclose(positionFile); //ici
