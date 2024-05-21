@@ -419,7 +419,7 @@ bool FGAuxiliary::Run(bool Holding)
 
   // ON SUIT LE REFERENCE BF ALT NORD EST. CHANGER DANS ECRITURE DE TXT SI CHANGEMENT DANS BF.
   double LA, LN, LE, CGA, CGN, CGE, RA, RN, RE = getPositions();
-  printf("%d %f %f %f %f %f %f %f %f %f", iter, LA, LN, LE, CGA, CGN, CGE, RA, RN, RE);
+  printf("%d %f %f %f %f %f %f %f %f %f \n", iter, LA, LN, LE, CGA, CGN, CGE, RA, RN, RE);
 
   printf("Je suis avant l'ajout de données. \n");
 
@@ -1211,6 +1211,8 @@ double FGAuxiliary::getPositions(){
   double posRN = positions[2][0];
   double posRE = positions[2][1];
   double posRA = positions[2][2];
+
+  printf("IN FCT POS: %d %f %f %f %f %f %f %f %f %f \n", iter, posLA, posLN, posLE, posCGA, posCGN, posCGE, posRA, posRN, posRE);
 
   return posLA, posLN, posLE, posCGA, posCGN, posCGE, posRA, posRN, posRE;
 }
