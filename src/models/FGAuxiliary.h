@@ -97,6 +97,18 @@ CLASS DOCUMENTATION
 CLASS DECLARATION
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
 
+struct Position {
+    double posLN;
+    double posLE;
+    double posLA;
+    double posCGN;
+    double posCGE;
+    double posCGA;
+    double posRN;
+    double posRE;
+    double posRA;
+  };
+
 // FONCTION RAJOUTEES
 class FGPropagate;
 
@@ -281,21 +293,9 @@ public:
 
   void SetAeroPQR(const FGColumnVector3& tt) { vAeroPQR = tt; }
 
-  struct Position {
-    double posLN;
-    double posLE;
-    double posLA;
-    double posCGN;
-    double posCGE;
-    double posCGA;
-    double posRN;
-    double posRE;
-    double posRA;
-  };
-
   FGColumnVector3 resultMoment();
   FGColumnVector3 getCGWinds();
-  void getPositions(Position p);
+  Position getPositions();
 
   double newEastTarget;
   double newNorthTarget;
