@@ -418,8 +418,8 @@ bool FGAuxiliary::Run(bool Holding)
   autopilot2(updraft, time, East_pos, North_pos, East_target, North_target);
 
   // ON SUIT LE REFERENCE BF ALT NORD EST. CHANGER DANS ECRITURE DE TXT SI CHANGEMENT DANS BF.
-  Pos pos;
-  pos = getPositions();
+  Position pos;
+  getPositions(pos);
   printf("%d %f %f %f %f %f %f %f %f %f \n", iter, pos.posLA, pos.posLN, pos.posLE, pos.posCGA, pos.posCGN, pos.posCGE, pos.posRA, pos.posRN, pos.posRE);
 
   printf("Je suis avant l'ajout de données. \n");
@@ -1200,8 +1200,7 @@ FGColumnVector3 FGAuxiliary::getCGWinds(){
   return velCGBox;
 }
 
-Pos FGAuxiliary::getPositions(){
-  Pos p;
+void FGAuxiliary::getPositions(Position p){
   p.posLN = positions[0][0];
   p.posLE = positions[0][1];
   p.posLA = positions[0][2];
@@ -1215,8 +1214,6 @@ Pos FGAuxiliary::getPositions(){
   p.posRA = positions[2][2];
 
   printf("IN FCT POS: %d %f %f %f %f %f %f %f %f %f \n", iter, p.posLA, p.posLN, p.posLE, p.posCGA, p.posCGN, p.posCGE, p.posRA, p.posRN, p.posRE);
-
-  return p;
 }
 
 void FGAuxiliary::goTo(double x2, double y2, double x1, double y1) {

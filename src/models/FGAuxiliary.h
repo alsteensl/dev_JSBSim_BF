@@ -281,7 +281,7 @@ public:
 
   void SetAeroPQR(const FGColumnVector3& tt) { vAeroPQR = tt; }
 
-  struct Pos {
+  struct Position {
     double posLN;
     double posLE;
     double posLA;
@@ -295,7 +295,7 @@ public:
 
   FGColumnVector3 resultMoment();
   FGColumnVector3 getCGWinds();
-  Pos getPositions();
+  void getPositions(Position p);
 
   double newEastTarget;
   double newNorthTarget;
