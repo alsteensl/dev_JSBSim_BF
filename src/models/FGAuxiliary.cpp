@@ -418,8 +418,9 @@ bool FGAuxiliary::Run(bool Holding)
   autopilot2(updraft, time, East_pos, North_pos, East_target, North_target);
 
   // ON SUIT LE REFERENCE BF ALT NORD EST. CHANGER DANS ECRITURE DE TXT SI CHANGEMENT DANS BF.
-  double LA, LN, LE, CGA, CGN, CGE, RA, RN, RE = getPositions();
-  printf("%d %f %f %f %f %f %f %f %f %f \n", iter, LA, LN, LE, CGA, CGN, CGE, RA, RN, RE);
+  Pos pos;
+  pos = getPositions();
+  printf("%d %f %f %f %f %f %f %f %f %f \n", iter, pos.posLA, pos.posLN, pos.posLE, pos.posCGA, pos.posCGN, pos.posCGE, pos.posRA, pos.posRN, pos.posRE);
 
   printf("Je suis avant l'ajout de données. \n");
 
@@ -449,7 +450,7 @@ bool FGAuxiliary::Run(bool Holding)
   printf("BEFORE WRITING FILE\n");
 
   // Write updated values to position.txt
-  fprintf(positionFile, "%d %lf %lf %lf %lf %lf %lf %lf %lf %lf\n", iter, LA, LN, LE, CGA, CGN, CGE, RA, RN, RE);
+  fprintf(positionFile, "%d %lf %lf %lf %lf %lf %lf %lf %lf %lf\n", iter, pos.posLA, pos.posLN, pos.posLE, pos.posCGA, pos.posCGN, pos.posCGE, pos.posRA, pos.posRN, pos.posRE);
     // Release the lock
   /* if (flock(fd, LOCK_UN) == -1) {
       perror("Error unlocking file");
@@ -1199,22 +1200,23 @@ FGColumnVector3 FGAuxiliary::getCGWinds(){
   return velCGBox;
 }
 
-double FGAuxiliary::getPositions(){
-  double posLN = positions[0][0];
-  double posLE = positions[0][1];
-  double posLA = positions[0][2];
+Pos FGAuxiliary::getPositions(){
+  Pos p;
+  p.posLN = positions[0][0];
+  p.posLE = positions[0][1];
+  p.posLA = positions[0][2];
 
-  double posCGN = positions[1][0];
-  double posCGE = positions[1][1];
-  double posCGA = positions[1][2];
+  p.posCGN = positions[1][0];
+  p.posCGE = positions[1][1];
+  p.posCGA = positions[1][2];
 
-  double posRN = positions[2][0];
-  double posRE = positions[2][1];
-  double posRA = positions[2][2];
+  p.posRN = positions[2][0];
+  p.posRE = positions[2][1];
+  p.posRA = positions[2][2];
 
-  printf("IN FCT POS: %d %f %f %f %f %f %f %f %f %f \n", iter, posLA, posLN, posLE, posCGA, posCGN, posCGE, posRA, posRN, posRE);
+  printf("IN FCT POS: %d %f %f %f %f %f %f %f %f %f \n", iter, p.posLA, p.posLN, p.posLE, p.posCGA, p.posCGN, p.posCGE, p.posRA, p.posRN, p.posRE);
 
-  return posLA, posLN, posLE, posCGA, posCGN, posCGE, posRA, posRN, posRE;
+  return p;
 }
 
 void FGAuxiliary::goTo(double x2, double y2, double x1, double y1) {

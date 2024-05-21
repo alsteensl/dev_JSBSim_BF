@@ -283,7 +283,7 @@ public:
 
   FGColumnVector3 resultMoment();
   FGColumnVector3 getCGWinds();
-  double getPositions();
+  Pos getPositions();
 
   double newEastTarget;
   double newNorthTarget;
@@ -453,6 +453,18 @@ private:
   double UG, VG, WG;
   double UD, VD, WD;
 };
+
+typedef struct {
+  double posLN;
+  double posLE;
+  double posLA;
+  double posCGN;
+  double posCGE;
+  double posCGA;
+  double posRN;
+  double posRE;
+  double posRA;
+} Pos;
 
 } // namespace JSBSim
 
