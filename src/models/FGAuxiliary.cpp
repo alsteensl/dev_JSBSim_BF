@@ -215,7 +215,7 @@ bool FGAuxiliary::Run(bool Holding)
         //exit(EXIT_FAILURE);
     }
     fclose(windVelFile);
-    printf("IN LOOP JSB and iter = %d iterBF = %d\n", iter, iter_BF);;
+    //printf("IN LOOP JSB and iter = %d iterBF = %d\n", iter, iter_BF);;
   } //ici
   //printf("OUT OF LOOP JSB and iter == iterBF\n");
   
