@@ -157,7 +157,7 @@ bool FGAuxiliary::InitModel(void)
   }
 
   // Write initial values
-  fprintf(positionFile, "%d %lf %lf %lf %lf %lf %lf %lf %lf %lf\n", 1, 0., 0., 0., 0., 0., 0., 0., 0., 0.);
+  fprintf(positionFile, "%d %lf %lf %lf %lf %lf %lf %lf %lf %lf\n", 0, 0., 0., 0., 0., 0., 0., 0., 0., 0.);
 
   // Close file
   fclose(positionFile); //ici
@@ -198,8 +198,6 @@ bool FGAuxiliary::Run(bool Holding)
   //sendBytes(sock, &flag, sizeof(int)) ;
   //recvBytes(sock, &VWind, 3*sizeof(double));
 
-  iter += 1;
-
   /////////////////////////////:
   // Fonction qui renvoit la vitesse du vent de BF
   /////////////////////////////:
@@ -220,6 +218,7 @@ bool FGAuxiliary::Run(bool Holding)
     printf("OUT OF LOOP BF and iter = %d iterBF = %d\n", iter, iter_BF);;
   } //ici
   printf("OUT OF LOOP JSB and iter == iterBF\n");
+  iter += 1;
   
   if (FGModel::Run(Holding)) return true; // return true if error returned from base class
   if (Holding) return false;
