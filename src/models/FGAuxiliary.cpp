@@ -314,7 +314,7 @@ bool FGAuxiliary::Run(bool Holding)
   FGColumnVector3 vMac = in.Tb2l * in.RPBody;
   hoverbmac = (in.DistanceAGL - vMac(3)) / in.Wingspan;
 
-
+  printf("Je suis avant mes fonctions\n");
   // FONCTION RAJOUTEES
 
   double dist_long = GetLongitudeRelativePosition() * 0.3048;
@@ -419,6 +419,8 @@ bool FGAuxiliary::Run(bool Holding)
 
   // ON SUIT LE REFERENCE BF ALT NORD EST. CHANGER DANS ECRITURE DE TXT SI CHANGEMENT DANS BF.
   double LA, LN, LE, CGA, CGN, CGE, RA, RN, RE = getPositions();
+
+  printf("Je suis avant l'ajout de données.");
 
   double a_R = FDMExec->GetFCS()->GetDaCmd();
   double rolleee = FDMExec->GetPropagate()->GetEuler(1);
