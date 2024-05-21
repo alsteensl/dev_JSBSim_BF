@@ -380,6 +380,7 @@ void FGScript::ResetEvents(void)
 
 bool FGScript::RunScript(void)
 {
+  printf("In RunScript\n");
   unsigned i, j;
   unsigned event_ctr = 0;
 
@@ -530,6 +531,7 @@ bool FGScript::RunScript(void)
       }
 
     }
+    printf("End of RunScript\n");
 
     event_ctr++;
   }
