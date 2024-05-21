@@ -415,7 +415,11 @@ bool FGAuxiliary::Run(bool Holding)
     North_target = 2000.0;
   }
 
+  printf("up=%f epos=%f npos=%f", updraft, East_pos, North_pos);
+
   autopilot2(updraft, time, East_pos, North_pos, East_target, North_target);
+
+  printf("after autopilot");
 
   // ON SUIT LE REFERENCE BF ALT NORD EST. CHANGER DANS ECRITURE DE TXT SI CHANGEMENT DANS BF.
   Position pos = getPositions();
