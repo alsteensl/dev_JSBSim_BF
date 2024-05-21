@@ -449,7 +449,7 @@ bool FGAuxiliary::Run(bool Holding)
   printf("BEFORE WRITING FILE\n");
 
   // Write updated values to position.txt
-  fprintf(positionFile, "%d %lf %lf %lf %lf %lf %lf %lf %lf %lf\n", iter, pos.posLA, pos.posLN, pos.posLE, pos.posCGA, pos.posCGN, pos.posCGE, pos.posRA, pos.posRN, pos.posRE);
+  fprintf(positionFile, "%d %lf %lf %lf %lf %lf %lf %lf %lf %lf\n", iter+1, pos.posLA, pos.posLN, pos.posLE, pos.posCGA, pos.posCGN, pos.posCGE, pos.posRA, pos.posRN, pos.posRE);
     // Release the lock
   /* if (flock(fd, LOCK_UN) == -1) {
       perror("Error unlocking file");
