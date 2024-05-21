@@ -420,17 +420,19 @@ bool FGAuxiliary::Run(bool Holding)
   // ON SUIT LE REFERENCE BF ALT NORD EST. CHANGER DANS ECRITURE DE TXT SI CHANGEMENT DANS BF.
   double LA, LN, LE, CGA, CGN, CGE, RA, RN, RE = getPositions();
 
-  printf("Je suis avant l'ajout de données.");
+  printf("Je suis avant l'ajout de données. \n");
 
   double a_R = FDMExec->GetFCS()->GetDaCmd();
   double rolleee = FDMExec->GetPropagate()->GetEuler(1);
-  ajouterDonnees("Zzz_aR", a_R);
+  /* ajouterDonnees("Zzz_aR", a_R);
   ajouterDonnees("Zzz_Time", time);
   ajouterDonnees("Zzz_Roll", rolleee);
 
   ajouterDonnees("Zzz_North", North_pos);
   ajouterDonnees("Zzz_East", East_pos);
-  ajouterDonnees("Zzz_Alt", alt);
+  ajouterDonnees("Zzz_Alt", alt); */
+
+  printf("Je suis après ajout de données \n");
 
   FILE *positionFile = fopen("position.txt", "w");
   if (positionFile == NULL) {
