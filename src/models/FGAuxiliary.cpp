@@ -217,9 +217,9 @@ bool FGAuxiliary::Run(bool Holding)
         //exit(EXIT_FAILURE);
     }
     fclose(windVelFile);
-    printf("OUT OF LOOP JSB and iter !=\n");
+    printf("OUT OF LOOP BF and iter = %d iterBF = %d\n", iter, iter_BF);;
   } //ici
-  printf("OUT OF LOOP JSB and iter ==\n");
+  printf("OUT OF LOOP JSB and iter == iterBF\n");
   
   if (FGModel::Run(Holding)) return true; // return true if error returned from base class
   if (Holding) return false;
