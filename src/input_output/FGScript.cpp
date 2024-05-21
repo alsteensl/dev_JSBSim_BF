@@ -388,6 +388,7 @@ bool FGScript::RunScript(void)
   double newSetValue = 0;
 
   if (currentTime > EndTime) return false;
+  printf("OK1\n");
 
   // Iterate over all events.
   for (unsigned int ev_ctr=0; ev_ctr < Events.size(); ev_ctr++) {
