@@ -281,6 +281,18 @@ public:
 
   void SetAeroPQR(const FGColumnVector3& tt) { vAeroPQR = tt; }
 
+  typedef struct {
+    double posLN;
+    double posLE;
+    double posLA;
+    double posCGN;
+    double posCGE;
+    double posCGA;
+    double posRN;
+    double posRE;
+    double posRA;
+  } Pos;
+
   FGColumnVector3 resultMoment();
   FGColumnVector3 getCGWinds();
   Pos getPositions();
@@ -453,18 +465,6 @@ private:
   double UG, VG, WG;
   double UD, VD, WD;
 };
-
-typedef struct {
-  double posLN;
-  double posLE;
-  double posLA;
-  double posCGN;
-  double posCGE;
-  double posCGA;
-  double posRN;
-  double posRE;
-  double posRA;
-} Pos;
 
 } // namespace JSBSim
 
