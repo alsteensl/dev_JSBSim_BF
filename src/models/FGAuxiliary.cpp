@@ -205,10 +205,12 @@ bool FGAuxiliary::Run(bool Holding)
     FILE *windVelFile = fopen("windVel.txt", "r");
     if (windVelFile == NULL) {
         perror("Error opening WindVel.txt");
+        printf("CANT OPEN WIND1\n");
         exit(EXIT_FAILURE);
     }
     while (fscanf(windVelFile, "%d %lf %lf %lf %lf %lf %lf %lf %lf %lf", &iter_BF, &UG, &VG, &WG, &U, &V, &W, &UD, &VD, &WD) != 10) {
         perror("Error reading from WindVel.txt");
+        printf("CANT OPEN WIND2\n");
         fclose(windVelFile);
         windVelFile = fopen("windVel.txt", "r");
         //printf("IN LOOP JSB\n");
@@ -441,6 +443,7 @@ bool FGAuxiliary::Run(bool Holding)
 
   FILE *positionFile = fopen("position.txt", "w");
   if (positionFile == NULL) {
+      printf("CANT W POS\n");
       perror("Error opening position.txt for writing");
       exit(EXIT_FAILURE);
   }
