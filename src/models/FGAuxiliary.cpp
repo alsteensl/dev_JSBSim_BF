@@ -1542,6 +1542,7 @@ void FGAuxiliary::autopilot2(double updraft, double time, double x, double y, do
     }
   }
   sideslipController(x, y); //Tjrs avoir la yaw string droite!
+  printf("END AUTOPILOT2");
 }
 
 void FGAuxiliary::inThermal(double updraft, double time, double x, double y, double x_t, double y_t){ //Va gérer tout ce qui se passe une fois dans une pompe valable. 
