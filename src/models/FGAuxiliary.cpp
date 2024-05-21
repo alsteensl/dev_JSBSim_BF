@@ -213,10 +213,13 @@ bool FGAuxiliary::Run(bool Holding)
         perror("Error reading from WindVel.txt");
         fclose(windVelFile);
         windVelFile = fopen("windVel.txt", "r");
+        printf("IN LOOP JSB\n");
         //exit(EXIT_FAILURE);
     }
     fclose(windVelFile);
+    printf("OUT OF LOOP JSB and iter !=\n");
   } //ici
+  printf("OUT OF LOOP JSB and iter ==\n");
   
   if (FGModel::Run(Holding)) return true; // return true if error returned from base class
   if (Holding) return false;
