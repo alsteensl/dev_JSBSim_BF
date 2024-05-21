@@ -424,15 +424,16 @@ bool FGFDMExec::Run(void)
   }
 
   IncrTime();
-
+  printf("before RunScript\n");
   // returns true if success, false if complete
   if (Script && !IntegrationSuspended()) success = Script->RunScript();
+  printf("after RunScript\n");
 
   for (unsigned int i = 0; i < Models.size(); i++) {
     LoadInputs(i);
     Models[i]->Run(holding);
   }
-
+  printf("after runholding\n");
   if (Terminate) success = false;
 
   return success;
