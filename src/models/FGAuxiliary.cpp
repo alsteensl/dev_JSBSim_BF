@@ -447,8 +447,8 @@ bool FGAuxiliary::Run(bool Holding)
   //ajouterDonnees("Zzz_Roll", rolleee);
 
   ajouterDonnees("Zzz_North", North_pos);
-  //ajouterDonnees("Zzz_East", East_pos);
-  //ajouterDonnees("Zzz_Alt", alt);
+  ajouterDonnees("Zzz_East", East_pos);
+  ajouterDonnees("Zzz_Alt", alt);
 
   printf("Je suis après ajout de données \n");
 
@@ -1391,7 +1391,7 @@ void FGAuxiliary::initialiserFichier(const std::string& nomFichier) {
 
 void FGAuxiliary::ajouterDonnees(const std::string& nomFichier,double valeur) {
     // Ouvrir le fichier en mode ajout
-    const std::string chemin = "/scratch/ucl/tfl/sdiard/dev_JSBSim_BF/";
+    const std::string chemin = "/scratch/ucl/tfl/sdiard/dev_JSBSim_BF/pos/";
 
     std::ofstream fichier(chemin + nomFichier + ".txt", std::ios::app);
 
