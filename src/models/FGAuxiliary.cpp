@@ -1202,7 +1202,7 @@ void FGAuxiliary::getRollMoment(double hauteur, double longueur, double largeur,
     }
   }
 
-  boxMoment(1) = rollMoment;
+  boxMoment(1) = rollMoment/2.788;
   boxMoment(2) = 0.0;
   boxMoment(3) = 0.0;
 
