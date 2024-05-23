@@ -1391,7 +1391,7 @@ void FGAuxiliary::initialiserFichier(const std::string& nomFichier) {
 
 void FGAuxiliary::ajouterDonnees(const std::string& nomFichier,double valeur) {
     // Ouvrir le fichier en mode ajout
-    const std::string chemin = "/Users/Simon/Documents/Aaa_Thesis/jsbsim3h30/";
+    const std::string chemin = "/scratch/ucl/tfl/sdiard/dev_JSBSim_BF/";
 
     std::ofstream fichier(chemin + nomFichier + ".txt", std::ios::app);
 
