@@ -466,7 +466,7 @@ bool FGAuxiliary::Run(bool Holding)
 
   printf("BEFORE WRITING FILE\n");
 
-  usleep(10000); //waits for 100000 microseconds
+  usleep(200000); //waits for 100000 microseconds
 
   // Write updated values to position.txt
   fprintf(positionFile, "%d %lf %lf %lf %lf %lf %lf %lf %lf %lf\n", iter, pos.posLA, pos.posLN, pos.posLE, pos.posCGA, pos.posCGN, pos.posCGE, pos.posRA, pos.posRN, pos.posRE);
