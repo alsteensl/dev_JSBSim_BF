@@ -198,6 +198,8 @@ bool FGAuxiliary::Run(bool Holding)
   //sendBytes(sock, &flag, sizeof(int)) ;
   //recvBytes(sock, &VWind, 3*sizeof(double));
 
+
+
   iter += 1;
 
   /////////////////////////////:
@@ -219,8 +221,8 @@ bool FGAuxiliary::Run(bool Holding)
         //exit(EXIT_FAILURE);
     }
     fclose(windVelFile);
-    printf("IN LOOP JSB and iter = %d iterBF = %d\n", iter, iter_BF);;
   } //ici
+  printf("IN LOOP JSB and iter = %d iterBF = %d\n", iter, iter_BF);
   //printf("OUT OF LOOP JSB and iter == iterBF\n");
   /* UG = -0.485715;
   VG = 0.10117;
@@ -463,6 +465,8 @@ bool FGAuxiliary::Run(bool Holding)
   } */
 
   printf("BEFORE WRITING FILE\n");
+
+  usleep(100000); //waits for 100000 microseconds
 
   // Write updated values to position.txt
   fprintf(positionFile, "%d %lf %lf %lf %lf %lf %lf %lf %lf %lf\n", iter, pos.posLA, pos.posLN, pos.posLE, pos.posCGA, pos.posCGN, pos.posCGE, pos.posRA, pos.posRN, pos.posRE);
