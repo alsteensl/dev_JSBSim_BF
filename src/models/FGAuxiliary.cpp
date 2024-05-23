@@ -443,7 +443,7 @@ bool FGAuxiliary::Run(bool Holding)
   double a_R = FDMExec->GetFCS()->GetDaCmd();
   double rolleee = FDMExec->GetPropagate()->GetEuler(1);
   //ajouterDonnees("Zzz_aR", a_R);
-  //ajouterDonnees("Zzz_Time", time);
+  ajouterDonnees("Zzz_Time", time);
   //ajouterDonnees("Zzz_Roll", rolleee);
 
   ajouterDonnees("Zzz_North", North_pos);
