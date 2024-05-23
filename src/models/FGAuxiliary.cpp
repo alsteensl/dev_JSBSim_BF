@@ -157,7 +157,7 @@ bool FGAuxiliary::InitModel(void)
   }
 
   // Write initial values
-  fprintf(positionFile, "%d %lf %lf %lf %lf %lf %lf %lf %lf %lf\n", 0, 0., 0., 0., 0., 0., 0., 0., 0., 0.);
+  fprintf(positionFile, "%d %lf %lf %lf %lf %lf %lf %lf %lf %lf\n", 0, 500., 500., 500., 500., 500., 500., 500., 500., 500.);
 
   // Close file
   fclose(positionFile); //ici
@@ -198,6 +198,8 @@ bool FGAuxiliary::Run(bool Holding)
   //sendBytes(sock, &flag, sizeof(int)) ;
   //recvBytes(sock, &VWind, 3*sizeof(double));
 
+  iter += 1;
+
   /////////////////////////////:
   // Fonction qui renvoit la vitesse du vent de BF
   /////////////////////////////:
@@ -220,6 +222,16 @@ bool FGAuxiliary::Run(bool Holding)
     printf("IN LOOP JSB and iter = %d iterBF = %d\n", iter, iter_BF);;
   } //ici
   //printf("OUT OF LOOP JSB and iter == iterBF\n");
+  /* UG = -0.485715;
+  VG = 0.10117;
+  WG = 0.3;
+  U = -0.485715;
+  V = 0.150117;
+  W = 0.3;
+  UD = -0.485715;
+  VD = 0.15117;
+  WD = 0.3; */
+
   
   
   if (FGModel::Run(Holding)) return true; // return true if error returned from base class
@@ -258,8 +270,6 @@ bool FGAuxiliary::Run(bool Holding)
   }
 
   UpdateWindMatrices();
-
-  printf("Je suis dans auxiliary \n");
 
   Re = Vt * in.Wingchord / in.KinematicViscosity;
 
@@ -316,7 +326,6 @@ bool FGAuxiliary::Run(bool Holding)
   FGColumnVector3 vMac = in.Tb2l * in.RPBody;
   hoverbmac = (in.DistanceAGL - vMac(3)) / in.Wingspan;
 
-  printf("Je suis avant mes fonctions\n");
   // FONCTION RAJOUTEES
 
   double dist_long = GetLongitudeRelativePosition() * 0.3048;
@@ -333,7 +342,7 @@ bool FGAuxiliary::Run(bool Holding)
 
   double gride = grid[0][0];
 
-  points = 20; //nombre de points de part et d'autre du centre. Ici arbitraire.
+  points = 1; //nombre de points de part et d'autre du centre. Ici arbitraire.
 
   int vBoite[5][3] = {{0, 0, 3}, {0, 0, 2}, {0, 0, 1}, {0, 0, 0}, {0, 0, 0}};
   
@@ -417,11 +426,11 @@ bool FGAuxiliary::Run(bool Holding)
     North_target = 2000.0;
   }
 
-  printf("up=%f epos=%f npos=%f", updraft, East_pos, North_pos);
+  printf("up=%f epos=%f npos=%f \n", updraft, East_pos, North_pos);
 
   autopilot2(updraft, time, East_pos, North_pos, East_target, North_target);
 
-  printf("after autopilot");
+  printf("after autopilot \n");
 
   // ON SUIT LE REFERENCE BF ALT NORD EST. CHANGER DANS ECRITURE DE TXT SI CHANGEMENT DANS BF.
   Position pos = getPositions();
@@ -456,7 +465,7 @@ bool FGAuxiliary::Run(bool Holding)
   printf("BEFORE WRITING FILE\n");
 
   // Write updated values to position.txt
-  fprintf(positionFile, "%d %lf %lf %lf %lf %lf %lf %lf %lf %lf\n", iter+1, pos.posLA, pos.posLN, pos.posLE, pos.posCGA, pos.posCGN, pos.posCGE, pos.posRA, pos.posRN, pos.posRE);
+  fprintf(positionFile, "%d %lf %lf %lf %lf %lf %lf %lf %lf %lf\n", iter, pos.posLA, pos.posLN, pos.posLE, pos.posCGA, pos.posCGN, pos.posCGE, pos.posRA, pos.posRN, pos.posRE);
     // Release the lock
   /* if (flock(fd, LOCK_UN) == -1) {
       perror("Error unlocking file");
@@ -467,7 +476,7 @@ bool FGAuxiliary::Run(bool Holding)
   fclose(positionFile); //ici
 
   printf("FIN ITERATION \n");
-  iter += 1;
+  printf("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ \n \n");
 
   return false;
 }
@@ -1087,6 +1096,7 @@ void FGAuxiliary::getRollMoment(double hauteur, double longueur, double largeur,
 
   double theta = 3.14159/2 + yaw;
   double phi = 3.14159/2 - roll;
+  printf("yaw roll = %f %f \n", yaw, roll);
 
   double lift[2*n+1];
 
@@ -1121,6 +1131,10 @@ void FGAuxiliary::getRollMoment(double hauteur, double longueur, double largeur,
       positions[i][2] = hauteur + D*cos(phi);
     }
   }
+
+  printf("POS = %f %f \n",positions[0][1], positions[2][2]);
+
+  printf("long = %f lqrg = %f hqut =%f D=%f phi =%f thetq = %f \n",longueur, largeur, hauteur, D, phi, theta);
 
   for (int i = 0; i < 2*n+1; i++)
   {
@@ -1221,6 +1235,8 @@ Position FGAuxiliary::getPositions(){
   p.posRN = positions[2][0];
   p.posRE = positions[2][1];
   p.posRA = positions[2][2];
+
+  printf("POS = %f %f \n",positions[0][1], positions[2][2]);
 
   printf("IN FCT POS: %d %f %f %f %f %f %f %f %f %f \n", iter, p.posLA, p.posLN, p.posLE, p.posCGA, p.posCGN, p.posCGE, p.posRA, p.posRN, p.posRE);
 
