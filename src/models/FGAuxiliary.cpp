@@ -1505,10 +1505,10 @@ void FGAuxiliary::sideslipController(double x, double y){
   FDMExec->GetFCS()->SetDrCmd(cmdRudder);
 
 
-  ajouterDonnees("Zzz_yaw", yaw);
+  /* ajouterDonnees("Zzz_yaw", yaw);
   ajouterDonnees("Zzz_direction", direction);
   ajouterDonnees("Zzz_t", t);
-  ajouterDonnees("Zzz_rudder", cmdRudder);
+  ajouterDonnees("Zzz_rudder", cmdRudder); */
 }
 
 void FGAuxiliary::autopilot2(double updraft, double time, double x, double y, double x_t, double y_t){
@@ -1834,8 +1834,8 @@ void FGAuxiliary::turning(double angle)
   double roll_angle = FDMExec->GetPropagate()->GetEuler(1);//* 180/PI;
   double desired_roll_angle = (angle * PI) / 180;
   roll_error = desired_roll_angle - roll_angle;
-  ajouterDonnees("Zzz_rollError", roll_error);
-  ajouterDonnees("Zzz_timeTurn", timeTurn);
+  /* ajouterDonnees("Zzz_rollError", roll_error);
+  ajouterDonnees("Zzz_timeTurn", timeTurn); */
   
  
   // Terme proportionnel
