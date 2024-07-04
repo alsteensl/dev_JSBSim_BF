@@ -152,31 +152,27 @@ bool FGAuxiliary::InitModel(void)
   std::string aircraftName = FDMExec->GetAircraft()->GetAircraftName();
   std::cout << "aircraftName " << aircraftName << std::endl; 
 
-  int indexA;
-  if (aircraftName == "sgs1") {
-    indexA = 1;
-  } else if (aircraftName == "sgs2") {
-    indexA = 2;
-  } else {
-    indexA = 3;
+  for (int i = 1; i < 4; i++)
+  {
+    char* posFile;
+    sprintf(posFile, "position%d.txt", i);
+
+    std::cout << posFile << " ||  " << i << " aircraft: " << aircraftName << std::endl;
+
+    FILE *positionFile = fopen(posFile, "w");
+    if (positionFile == NULL) {
+        perror("Error opening windVel.txt");
+        exit(EXIT_FAILURE);
+    }
+
+    // Write initial values
+    fprintf(positionFile, "%d %lf %lf %lf %lf %lf %lf %lf %lf %lf\n", 0, 500., 500., 500., 500., 500., 500., 500., 500., 500.);
+
+    // Close file
+    fclose(positionFile); //ici
   }
-
-  char* posFile;
-  sprintf(posFile, "position%d.txt", indexA);
-
-  std::cout << posFile << " ||  " << indexA << " aircraft: " << aircraftName << std::endl;
-
-  FILE *positionFile = fopen(posFile, "w");
-  if (positionFile == NULL) {
-      perror("Error opening windVel.txt");
-      exit(EXIT_FAILURE);
-  }
-
-  // Write initial values
-  fprintf(positionFile, "%d %lf %lf %lf %lf %lf %lf %lf %lf %lf\n", 0, 500., 500., 500., 500., 500., 500., 500., 500., 500.);
-
-  // Close file
-  fclose(positionFile); //ici
+  
+  
   iter = 0;
 
   
