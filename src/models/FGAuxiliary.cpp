@@ -182,8 +182,10 @@ bool FGAuxiliary::InitModel(void)
   loadgrid(); */
 
   std::cout << "testBF" << std::endl;
-  printf("testBF222222");
-  std::cout << "hello" << std::endl;
+  printf("testBF222222\n");
+  std::cout << "INIT OK" << std::endl;
+
+  usleep(1000000);
 
   /* std::cout << u[110][110][110] << std::endl;
   std::cout << v[110][110][110] << std::endl;
@@ -205,6 +207,7 @@ int points;
 
 bool FGAuxiliary::Run(bool Holding)
 {
+  std::cout << "IN RUN" << std::endl;
   double VWind[3];
   int flag = 1;
   int iter_BF = -1;
@@ -216,6 +219,7 @@ bool FGAuxiliary::Run(bool Holding)
   iter += 1;
 
   std::string aircraftName = FDMExec->GetAircraft()->GetAircraftName();
+  std::cout << "Aircraft: " << aircraftName << std::endl;
 
   int indexA;
   if (aircraftName == "sgs1") {
