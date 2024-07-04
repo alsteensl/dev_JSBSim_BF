@@ -149,8 +149,22 @@ bool FGAuxiliary::InitModel(void)
   vMachUVW.InitMatrix();
   vEulerRates.InitMatrix();
 
+  std::string aircraftName = FDMExec->GetAircraft()->GetAircraftName();
+
+  int indexA;
+  if (aircraftName == "sgs1") {
+    indexA = 1;
+  } else if (aircraftName == "sgs2") {
+    indexA = 2;
+  } else {
+    indexA = 3;
+  }
+
+  char* posFile;
+  sprintf(posFile, "position%d.txt", indexA);
+
   printf("exited launch and connect \n");
-  FILE *positionFile = fopen("position.txt", "w");
+  FILE *positionFile = fopen(posFile, "w");
   if (positionFile == NULL) {
       perror("Error opening windVel.txt");
       exit(EXIT_FAILURE);
@@ -202,21 +216,35 @@ bool FGAuxiliary::Run(bool Holding)
 
   iter += 1;
 
+  std::string aircraftName = FDMExec->GetAircraft()->GetAircraftName();
+
+  int indexA;
+  if (aircraftName == "sgs1") {
+    indexA = 1;
+  } else if (aircraftName == "sgs2") {
+    indexA = 2;
+  } else {
+    indexA = 3;
+  }
+
+  char* windFile;
+  sprintf(windFile, "windVel%d.txt", indexA);
+
   /////////////////////////////:
   // Fonction qui renvoit la vitesse du vent de BF
   /////////////////////////////:
   while(iter != iter_BF){
-    FILE *windVelFile = fopen("windVel.txt", "r");
+    FILE *windVelFile = fopen(windFile, "r");
     if (windVelFile == NULL) {
         perror("Error opening WindVel.txt");
         printf("CANT OPEN WIND1\n");
         exit(EXIT_FAILURE);
     }
-    while (fscanf(windVelFile, "%d %lf %lf %lf %lf %lf %lf %lf %lf %lf", &iter_BF, &UG, &VG, &WG, &U, &V, &W, &UD, &VD, &WD) != 10) {
+    while (fscanf(windVelFile, "%d %lf %lf %lf %lf %lf %lf %lf %lf %lf", &iter_BF, &UG, &VG, &WG, &U, &V, &W, &UD, &VD, &WD) != 11) {
         perror("Error reading from WindVel.txt");
         printf("CANT OPEN WIND2\n");
         fclose(windVelFile);
-        windVelFile = fopen("windVel.txt", "r");
+        windVelFile = fopen(windFile, "r");
         //printf("IN LOOP JSB\n");
         //exit(EXIT_FAILURE);
     }
