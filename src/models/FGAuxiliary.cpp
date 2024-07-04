@@ -165,7 +165,6 @@ bool FGAuxiliary::InitModel(void)
 
   std::cout << posFile << " ||  " << indexA << std::endl;
 
-  printf("exited launch and connect \n");
   FILE *positionFile = fopen("position2.txt", "w");
   if (positionFile == NULL) {
       perror("Error opening windVel.txt");
@@ -186,7 +185,7 @@ bool FGAuxiliary::InitModel(void)
   loadgrid(); */
 
   std::cout << "testBF" << std::endl;
-  printf("testBF2");
+  printf("testBF222222");
 
   /* std::cout << u[110][110][110] << std::endl;
   std::cout << v[110][110][110] << std::endl;
