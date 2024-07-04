@@ -183,6 +183,7 @@ bool FGAuxiliary::InitModel(void)
 
   std::cout << "testBF" << std::endl;
   printf("testBF222222");
+  std::cout << "hello" << std::endl;
 
   /* std::cout << u[110][110][110] << std::endl;
   std::cout << v[110][110][110] << std::endl;
