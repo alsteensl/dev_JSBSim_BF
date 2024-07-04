@@ -163,6 +163,8 @@ bool FGAuxiliary::InitModel(void)
   char* posFile;
   sprintf(posFile, "position%d.txt", indexA);
 
+  std::cout << posFile << " " << indexA << std::endl;
+
   printf("exited launch and connect \n");
   FILE *positionFile = fopen(posFile, "w");
   if (positionFile == NULL) {
