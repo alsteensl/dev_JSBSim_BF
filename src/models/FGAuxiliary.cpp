@@ -238,7 +238,7 @@ bool FGAuxiliary::Run(bool Holding)
   // Fonction qui renvoit la vitesse du vent de BF
   /////////////////////////////:
   while(iter != iter_BF){
-    FILE *windVelFile = fopen("windVel1.txt", "r");
+    FILE *windVelFile = fopen("windVel3.txt", "r");
     if (windVelFile == NULL) {
         perror("Error opening WindVel.txt");
         printf("CANT OPEN WIND1\n");
