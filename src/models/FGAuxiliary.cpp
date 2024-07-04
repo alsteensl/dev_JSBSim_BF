@@ -150,6 +150,7 @@ bool FGAuxiliary::InitModel(void)
   vEulerRates.InitMatrix();
 
   std::string aircraftName = FDMExec->GetAircraft()->GetAircraftName();
+  std::cout << "aircraftName " << aircraftName << std::endl; 
 
   int indexA;
   if (aircraftName == "sgs1") {
