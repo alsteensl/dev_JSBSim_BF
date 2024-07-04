@@ -166,7 +166,7 @@ bool FGAuxiliary::InitModel(void)
   std::cout << posFile << " ||  " << indexA << std::endl;
 
   printf("exited launch and connect \n");
-  FILE *positionFile = fopen(posFile, "w");
+  FILE *positionFile = fopen("position2.txt", "w");
   if (positionFile == NULL) {
       perror("Error opening windVel.txt");
       exit(EXIT_FAILURE);
