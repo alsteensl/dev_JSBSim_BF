@@ -165,7 +165,7 @@ bool FGAuxiliary::InitModel(void)
 
   std::cout << posFile << " ||  " << indexA << std::endl;
 
-  FILE *positionFile = fopen("position2.txt", "w");
+  FILE *positionFile = fopen(posFile, "w");
   if (positionFile == NULL) {
       perror("Error opening windVel.txt");
       exit(EXIT_FAILURE);
