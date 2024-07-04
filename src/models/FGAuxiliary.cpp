@@ -208,6 +208,7 @@ int points;
 bool FGAuxiliary::Run(bool Holding)
 {
   std::cout << "IN RUN" << std::endl;
+  usleep(100000);
   double VWind[3];
   int flag = 1;
   int iter_BF = -1;
