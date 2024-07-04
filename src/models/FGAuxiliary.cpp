@@ -480,7 +480,10 @@ bool FGAuxiliary::Run(bool Holding)
 
   printf("Je suis après ajout de données \n");
 
-  FILE *positionFile = fopen("position.txt", "w");
+  char* posFile;
+  sprintf(posFile, "position%d.txt", indexA);
+
+  FILE *positionFile = fopen(posFile, "w");
   if (positionFile == NULL) {
       printf("CANT W POS\n");
       perror("Error opening position.txt for writing");
