@@ -149,28 +149,18 @@ bool FGAuxiliary::InitModel(void)
   vMachUVW.InitMatrix();
   vEulerRates.InitMatrix();
 
-  std::string aircraftName = FDMExec->GetAircraft()->GetAircraftName();
-  std::cout << "aircraftName " << aircraftName << std::endl; 
 
-  for (int i = 1; i < 4; i++)
-  {
-    char* posFile;
-    sprintf(posFile, "position%d.txt", i);
-
-    std::cout << posFile << " ||  " << i << " aircraft: " << aircraftName << std::endl;
-
-    FILE *positionFile = fopen(posFile, "w");
-    if (positionFile == NULL) {
-        perror("Error opening windVel.txt");
-        exit(EXIT_FAILURE);
-    }
-
-    // Write initial values
-    fprintf(positionFile, "%d %lf %lf %lf %lf %lf %lf %lf %lf %lf\n", 0, 500., 500., 500., 500., 500., 500., 500., 500., 500.);
-
-    // Close file
-    fclose(positionFile); //ici
+  FILE *positionFile = fopen("positionX.txt", "w");
+  if (positionFile == NULL) {
+      perror("Error opening windVel.txt");
+      exit(EXIT_FAILURE);
   }
+
+  // Write initial values
+  fprintf(positionFile, "%d %lf %lf %lf %lf %lf %lf %lf %lf %lf\n", 0, 600., 500., 500., 500., 500., 500., 500., 500., 500.);
+
+  // Close file
+  fclose(positionFile); //ici
   
   
   iter = 0;
@@ -219,26 +209,11 @@ bool FGAuxiliary::Run(bool Holding)
 
   iter += 1;
 
-  std::string aircraftName = FDMExec->GetAircraft()->GetAircraftName();
-  std::cout << "Aircraft: " << aircraftName << std::endl;
-
-  int indexA;
-  if (aircraftName == "sgs1") {
-    indexA = 1;
-  } else if (aircraftName == "sgs2") {
-    indexA = 2;
-  } else {
-    indexA = 3;
-  }
-
-  char* windFile;
-  sprintf(windFile, "windVel%d.txt", indexA);
-
   /////////////////////////////:
   // Fonction qui renvoit la vitesse du vent de BF
   /////////////////////////////:
   while(iter != iter_BF){
-    FILE *windVelFile = fopen("windVel3.txt", "r");
+    FILE *windVelFile = fopen("windVelX.txt", "r");
     if (windVelFile == NULL) {
         perror("Error opening WindVel.txt");
         printf("CANT OPEN WIND1\n");
@@ -248,7 +223,7 @@ bool FGAuxiliary::Run(bool Holding)
         perror("Error reading from WindVel.txt");
         printf("CANT OPEN WIND2\n");
         fclose(windVelFile);
-        windVelFile = fopen(windFile, "r");
+        windVelFile = fopen("windVelX.txt", "r");
         //printf("IN LOOP JSB\n");
         //exit(EXIT_FAILURE);
     }
@@ -484,10 +459,7 @@ bool FGAuxiliary::Run(bool Holding)
 
   printf("Je suis après ajout de données \n");
 
-  char* posFile;
-  sprintf(posFile, "position%d.txt", indexA);
-
-  FILE *positionFile = fopen("position3.txt", "w");
+  FILE *positionFile = fopen("positionX.txt", "w");
   if (positionFile == NULL) {
       printf("CANT W POS\n");
       perror("Error opening position.txt for writing");
