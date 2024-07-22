@@ -502,6 +502,8 @@ private:
 
   int ok = 0;
 
+  int finito = 0;
+
   //sideslip controller
   double oldEast = 0.0;
   double oldNorth = 0.0;

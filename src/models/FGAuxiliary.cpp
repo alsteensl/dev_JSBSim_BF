@@ -218,7 +218,7 @@ bool FGAuxiliary::Run(bool Holding)
         printf("CANT OPEN WIND1\n");
         exit(EXIT_FAILURE);
     }
-    while (fscanf(windVelFile, "%d %lf %lf %lf %lf %lf %lf %lf %lf %lf", &iter_BF, &UG, &VG, &WG, &U, &V, &W, &UD, &VD, &WD) != 11) {
+    while (fscanf(windVelFile, "%d %lf %lf %lf %lf %lf %lf %lf %lf %lf", &iter_BF, &UG, &VG, &WG, &U, &V, &W, &UD, &VD, &WD) != 10) {
         perror("Error reading from WindVel.txt");
         printf("CANT OPEN WIND2\n");
         fclose(windVelFile);
@@ -512,7 +512,15 @@ bool FGAuxiliary::Run(bool Holding)
   //usleep(200000); //waits for 100000 microseconds
 
   // Write updated values to position.txt
-  fprintf(positionFile, "%d %lf %lf %lf %lf %lf %lf %lf %lf %lf\n", iter, pos.posLA, pos.posLN, pos.posLE, pos.posCGA, pos.posCGN, pos.posCGE, pos.posRA, pos.posRN, pos.posRE);
+
+  if (std::isnan(alt) || alt <= 20.0 || finito == 1) {
+      finito = 1;
+      fprintf(positionFile, "%d %lf %lf %lf %lf %lf %lf %lf %lf %lf %d\n", iter, 100.0, 500.0, 500.0, 100.0, 500.0, 500.0, 100.0, 500.0, 500.0, finito);
+  } else {
+      fprintf(positionFile, "%d %lf %lf %lf %lf %lf %lf %lf %lf %lf %d\n", iter, pos.posLA, pos.posLN, pos.posLE, pos.posCGA, pos.posCGN, pos.posCGE, pos.posRA, pos.posRN, pos.posRE, finito);
+  }
+
+  //fprintf(positionFile, "%d %lf %lf %lf %lf %lf %lf %lf %lf %lf\n", iter, pos.posLA, pos.posLN, pos.posLE, pos.posCGA, pos.posCGN, pos.posCGE, pos.posRA, pos.posRN, pos.posRE);
     // Release the lock
   /* if (flock(fd, LOCK_UN) == -1) {
       perror("Error unlocking file");
