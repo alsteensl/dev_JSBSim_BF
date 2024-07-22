@@ -404,12 +404,59 @@ private:
 
 
   //AUTOPILOT 2
-  void autopilot2(double updraft, double time, double x, double y, double x_t, double y_t); //x_t and y_t target position
-  void inThermal(double updraft, double time, double x, double y, double x_t, double y_t);
-  void thermalCentering(double updraft, double time, double x, double y, double x_t, double y_t);
-  void turning(double angle);
-  void exitStrategy(double updraft, double time, double x, double y, double x_t, double y_t);
+  void autopilot2(double updraft, double time, double x_t, double y_t); //x_t and y_t target position
+  void inThermal(double updraft, double time);
+  void thermalCentering(double updraft, double time);
   double getPsiError(double x1, double y1, double x2, double y2);
+
+
+  double East_pos;
+  double North_pos;
+  void control(double p, double q, double r);
+  void PID(double bank, double vel, int turn);
+  double thetaSpeed(double speed);
+  double pOld;
+  double qOld;
+  double rOld;
+  void exitStrategy2(double time, double x, double y, double x_t, double y_t);
+  double GetSlip();
+
+  double aOld;
+  double eOld;
+  double ROld;
+
+  double bankerror = 0.0;
+  double pitcherror = 0.0;
+  double slip = 0.0;
+
+
+  double oldBankError = 0.0; 
+  double oldPitchError = 0.0;
+  double oldSlip = 0.0;
+  double sumErrorR;
+  double sumErrorP;
+  double sumErrorS;
+
+  double vTransi = 100.0;
+  double vTurn = 60.0;
+  double vWanted = 0.0;
+  double thetaWanted = 0.0;
+
+  double trig_encl1;
+  double triggered;
+  double wait_time;
+  double angle = 0.0;
+
+  double bankOld = 0.0;
+  double bankRef = 0.0;
+  double bankSmooth = 0.0;
+  double pitchSmooth = 0.0;
+  double bankRefOld = 0.0;
+  double pitchOld = 0.0;
+
+  double p = 0.0;
+  double q = 0.0;
+  double r = 0.0;
 
   double prevUpdraft;
 
@@ -459,6 +506,31 @@ private:
   double oldEast = 0.0;
   double oldNorth = 0.0;
   double oldSideslip = 0.0;
+
+  //TESTS MATRICE SENSIBILITE
+  double phiOld;
+  double thetaOld;
+  double psiOld;
+
+  int turn_before = 0;
+  double time_enter_turn = 0.0;
+   
+  double avg_climb(double altitude);
+  std::list<double> values;
+
+  int enter_1500 = 0;
+  double psi_init;
+
+  double av_roll(double rollm);
+  std::list<double> rollm_list;
+  int target_int = 0;
+
+  double x_t_inter;
+  double y_t_inter;
+
+  
+  double climb;
+  double up_decl = 0.5;
 
   //velocities from BF
   double U, V, W;
