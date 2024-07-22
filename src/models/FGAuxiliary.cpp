@@ -157,7 +157,7 @@ bool FGAuxiliary::InitModel(void)
   }
 
   // Write initial values
-  fprintf(positionFile, "%d %lf %lf %lf %lf %lf %lf %lf %lf %lf\n", 0, 600., 500., 500., 500., 500., 500., 500., 500., 500.);
+  fprintf(positionFile, "%d %lf %lf %lf %lf %lf %lf %lf %lf %lf %d\n", 0, 600., 500., 500., 500., 500., 500., 500., 500., 500., 0);
 
   // Close file
   fclose(positionFile); //ici
@@ -222,7 +222,7 @@ bool FGAuxiliary::Run(bool Holding)
         perror("Error reading from WindVel.txt");
         printf("CANT OPEN WIND2\n");
         fclose(windVelFile);
-        windVelFile = fopen("windVelX.txt", "r");
+        windVelFile = fopen("windVelX.txt", "r"); // ||||||||||||||||||||||||||MODIFY HERE|||||||||||||||||||\
         //printf("IN LOOP JSB\n");
         //exit(EXIT_FAILURE);
     }
