@@ -538,6 +538,8 @@ private:
   double U, V, W;
   double UG, VG, WG;
   double UD, VD, WD;
+
+  int end;
 };
 
 } // namespace JSBSim

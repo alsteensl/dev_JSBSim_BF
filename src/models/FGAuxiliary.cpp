@@ -222,7 +222,7 @@ bool FGAuxiliary::Run(bool Holding)
         perror("Error reading from WindVel.txt");
         printf("CANT OPEN WIND2\n");
         fclose(windVelFile);
-        windVelFile = fopen("windVelX.txt", "r"); // ||||||||||||||||||||||||||MODIFY HERE|||||||||||||||||||\
+        windVelFile = fopen("windVelX.txt", "r"); //|||||||||||||||||||||||| MODIFY HERE
         //printf("IN LOOP JSB\n");
         //exit(EXIT_FAILURE);
     }
@@ -375,9 +375,6 @@ bool FGAuxiliary::Run(bool Holding)
 
   int box = 1; //Si box = 1, on est dans la boite. HEREEEEEEEEEEEEEEEEEEE
 
-  double East_pos;
-  double North_pos;
-
   if (lon_deg < 0)
   {
     dist_long *= -1;
@@ -414,48 +411,35 @@ bool FGAuxiliary::Run(bool Holding)
   double yaw = FDMExec->GetPropagate()->GetEuler(3);
   double time = FDMExec->GetSimTime();
 
+  East_target = 4000.0;
+  North_target = 100000.0;
+
   double dist_target = sqrt((East_target-East_pos)*(East_target-East_pos) + (North_target-North_pos)*(North_target-North_pos));
 
-  if (dist_target <= 200.0)
-  {
-    n_target++;
-    //std::cout << "@@@@@@@@@@@@@@ CHGMT DE TARGET @@@@@@@@@@@@@@";
-  }
-  
-  if (n_target == 1 || n_target == 4) {
-    East_target = 7000.0; //objectif de position a atteindre
-    North_target = 4000.0;
-  } else if (n_target == 2) {
-    East_target = 5000.0; //objectif de position a atteindre
-    North_target = 7000.0;
-  } else {
-    East_target = 2000.0; //objectif de position a atteindre
-    North_target = 2000.0;
-  }
 
-  if (alt < 450.0){
+  if (alt <= 450.0){
     up_decl = 0.0;
     vTransi = 72.0;
 
-    trig_encl1 = 1.4;
+    trig_encl1 = 1.0;
     triggered = 1.4;
 
     wait_time = 0.0;
   }
-  if (alt < 800.0 && alt > 450.0){
+  if (alt <= 800.0 && alt > 450.0){
     up_decl = 0.2;
     vTransi = 81.50;
 
-    trig_encl1 = 1.8;
+    trig_encl1 = 1.0;
     triggered = 2.0;
 
     wait_time = 0.0;
   }
-  if (alt > 800.0 && alt < 1400.0){
+  if (alt > 800.0 && alt <= 1400.0){
     up_decl = 0.5;
     vTransi = 88.0;
 
-    trig_encl1 = 2.0;
+    trig_encl1 = 1.0;
     triggered = 2.2;
 
     wait_time = 0.0;
@@ -464,7 +448,7 @@ bool FGAuxiliary::Run(bool Holding)
     up_decl = 0.7;
     vTransi = 94.0;
 
-    trig_encl1 = 2.2;
+    trig_encl1 = 1.0;
     triggered = 2.5;
 
     wait_time = 0.0;
@@ -474,6 +458,13 @@ bool FGAuxiliary::Run(bool Holding)
   slip = GetSlip();
   climb = avg_climb(alt);
   autopilot2(updraft, time, East_target, North_target);
+
+  if (dist_target <= 200.0 || end == 1) {
+    North_pos = NAN;
+    East_pos = NAN;
+    alt = NAN;
+    end = 1;
+  }
 
   //printf("after autopilot \n");
 
@@ -942,6 +933,14 @@ void FGAuxiliary::loadgrid()
 //
 double* FGAuxiliary::rechercheNoeuds(double hauteur, double longueur, double largeur, double refz,double ref_long, double longi, double lat) //x,y et z selon la règle de la main droite
 {    
+    if (longueur > 7984.375) {
+      //std::cout  << longueur << " [m]" << std::endl;
+      //std::cout << "  AU DELA DE LA GRILLE ON PASSE DE " << longueur << " [m]" << std::endl;
+      longueur = fmod(longueur,7984.375);
+      if (longueur > 0.0 && longueur < 20.0) {longueur = 20;}; 
+      //std::cout << "  A  " << longueur << " [m]" << std::endl;
+    }
+
     // Parcourir le tableau hauteur 
     int indice1h = -1, indice2h = -1;
     for (int i = 0; i < 127 - 1; ++i) {
@@ -1340,14 +1339,22 @@ void FGAuxiliary::autopilot2(double updraft, double time,  double x_t, double y_
   double av_roll_dt = av_roll(rollInst);
   double target_x, target_y; 
   double alti = Propagate->GetAltitudeASL()*0.3048;
-   
 
+  if ((alti >= dist_target/18.0+400.0 && abs(errorHead) <= 0.30)) {
+    turn = 2;
+  }
+   
   if (turn == 1 ) { //in pump // && time - timeTriggerRoll >20
     inThermal(updraft, time);
   } 
   else if (time >= 10.0 && time - exitTime <= wait_time && turn == 0 && updraft < 3.0 && alti > 300.0) { //  && time - timeTriggerRoll >50 //on force l'éloignement de la plume pour avancer vers target.
     PID(0.0, vTransi, 0);
     
+  } else if ((alti >= dist_target/18.0+400.0 && abs(errorHead) <= 0.30) || turn == 2) {
+    turn = 2;
+    vTransi = 110.0;
+    PID(0.0, vTransi, 0);
+    //std::cout << "turn = 2, dist_target = " << dist_target << ", alt = " << alti << ", MIN = " << dist_target/18.0 + 200.0 << std::endl;
   }
   else { //not in pump
     if (updraft >= trig_encl1 && trigger == 0 ) { //&& time - timeTriggerRoll >20
