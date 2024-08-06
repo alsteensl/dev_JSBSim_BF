@@ -540,6 +540,8 @@ private:
   double UD, VD, WD;
 
   int end;
+  double dist_target;
+  double oldS;
 };
 
 } // namespace JSBSim

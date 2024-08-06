@@ -414,7 +414,7 @@ bool FGAuxiliary::Run(bool Holding)
   East_target = 4000.0;
   North_target = 100000.0;
 
-  double dist_target = sqrt((East_target-East_pos)*(East_target-East_pos) + (North_target-North_pos)*(North_target-North_pos));
+  dist_target = sqrt((East_target-East_pos)*(East_target-East_pos) + (North_target-North_pos)*(North_target-North_pos));
 
 
   if (alt <= 450.0){
@@ -459,7 +459,7 @@ bool FGAuxiliary::Run(bool Holding)
   climb = avg_climb(alt);
   autopilot2(updraft, time, East_target, North_target);
 
-  if (dist_target <= 200.0 || end == 1) {
+  if (dist_target <= 30.0 || end == 1) {
     North_pos = NAN;
     East_pos = NAN;
     alt = NAN;
@@ -1339,8 +1339,9 @@ void FGAuxiliary::autopilot2(double updraft, double time,  double x_t, double y_
   double av_roll_dt = av_roll(rollInst);
   double target_x, target_y; 
   double alti = Propagate->GetAltitudeASL()*0.3048;
+  double errorHead = getPsiError(East_pos, North_pos, East_target, North_target);
 
-  if ((alti >= dist_target/18.0+400.0 && abs(errorHead) <= 0.30)) {
+  if ((alti >= dist_target/18.0+500.0 && abs(errorHead) <= 0.30)) {
     turn = 2;
   }
    
@@ -1350,7 +1351,7 @@ void FGAuxiliary::autopilot2(double updraft, double time,  double x_t, double y_
   else if (time >= 10.0 && time - exitTime <= wait_time && turn == 0 && updraft < 3.0 && alti > 300.0) { //  && time - timeTriggerRoll >50 //on force l'éloignement de la plume pour avancer vers target.
     PID(0.0, vTransi, 0);
     
-  } else if ((alti >= dist_target/18.0+400.0 && abs(errorHead) <= 0.30) || turn == 2) {
+  } else if ((alti >= dist_target/18.0+500.0 && abs(errorHead) <= 0.30) || turn == 2) {
     turn = 2;
     vTransi = 110.0;
     PID(0.0, vTransi, 0);
@@ -1376,6 +1377,7 @@ void FGAuxiliary::autopilot2(double updraft, double time,  double x_t, double y_
     } else {
       trigger = 0; //aucune pompe valable de détectée
       PID(0.0, vTransi, 0);
+      rollTest = 0;
     }
   }
 }
@@ -1567,7 +1569,7 @@ double FGAuxiliary::av_roll(double rollm){
 }
 
 double FGAuxiliary::avg_climb(double altitude){
-  if (turn == 1){
+  if (ok == 1){
     values.push_back(altitude);
     // 240 dt = 20 sec
     // 720 dt = 60 sec
@@ -1700,13 +1702,13 @@ void FGAuxiliary::PID(double bank0, double vel, int turn){
   }
   bankOld = bankSmooth;
 
-  if (turn == 1 || bankRef - bankOld > bankRate || bankRef - bankOld < -bankRate) {
+  if (bankRef - bankOld > bankRate || bankRef - bankOld < -bankRate) {
     KpR = 0.04;
     KiR = 0.0;
     KdR = 0.0015;
   } else { //parametres vers target
     KpR = 0.08;
-    KiR = 0.0;
+    KiR = 0.001;
     KdR = 0.005;
   }
   
@@ -1732,7 +1734,7 @@ void FGAuxiliary::PID(double bank0, double vel, int turn){
   ///////////////////// q
   double pitch = FDMExec->GetPropagate()->GetEulerDeg(2);
   double pitch0 = thetaSpeed(vel);
-  double pitchRate = 0.6;
+  double pitchRate = 0.4;
  
   if (pitch0 - pitchOld > pitchRate) {
     pitchSmooth = pitchOld + pitchRate;
@@ -1766,7 +1768,7 @@ void FGAuxiliary::PID(double bank0, double vel, int turn){
   ///////////////// r
  
   double KpS = 0.02; //0.05
-  double KiS = 0.0; //0.05
+  double KiS = 0.001; //0.05
   double KdS = 0.005; //0.01
  
   sumErrorS += slip;
@@ -1832,9 +1834,11 @@ double FGAuxiliary::GetSlip(){
   double sideslip = (direction - yaw)*180/3.14159;
  
   if (sideslip >= 30.0) {
-    sideslip = 0.0;
+    sideslip = oldS;
   } else if (sideslip <= -30.0){
-    sideslip = 0.0;
+    sideslip = oldS;
+  } else {
+    oldS = sideslip;
   }
  
   return sideslip;
