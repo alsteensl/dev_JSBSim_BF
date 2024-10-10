@@ -350,25 +350,7 @@ bool FGAuxiliary::Run(bool Holding)
 
   double gride = grid[0][0];
 
-  points = 1; //nombre de points de part et d'autre du centre. Ici arbitraire.
-
-  int vBoite[5][3] = {{0, 0, 3}, {0, 0, 2}, {0, 0, 1}, {0, 0, 0}, {0, 0, 0}};
-  
-
-  /* rechercheNoeuds(alt, dist_lat, dist_long, 4000.0,100.0, lon_deg);
-  //std::cout << "-----------------------------------------------------------------------------------" <<std::endl;
-  //std::cout << "Long = " << lon_deg << " [°]" <<std::endl;
-  //std::cout << "Lat = " << lat_deg << " [°]" <<std::endl;
-  //std::cout << "--------" <<std::endl;
-  //std::cout << "avancement depuis la longitude (East) depuis la position initiale =  " << dist_long << " [m]" << std::endl;
-  //std::cout << "avancement depuis la latitude (North)  depuis la position initiale = " << dist_lat << " [m]" <<std::endl;
-  //std::cout << "Distance parcourue depuis la position initiale = " << dist_rel << " [m]" <<std::endl;
-  //std::cout << "Altitude = " << alt << " [m]" <<std::endl;
-
-  discretisation(alt, dist_lat, dist_long, points);
-  dynamics(vBoite, points); */
-
-  //getRollMoment(alt, dist_lat, dist_long, lon_deg, points, 4000.0, 100.0);
+  points = 1; //nombre de points de part et d'autre du centre. 
 
   double East_init = 4000.0; //position de départ dans la boite
   double North_init = 400.0;
@@ -498,10 +480,6 @@ bool FGAuxiliary::Run(bool Holding)
       exit(EXIT_FAILURE);
   } */
 
-  //printf("BEFORE WRITING FILE\n");
-
-  //usleep(200000); //waits for 100000 microseconds
-
   // Write updated values to position.txt
 
   if (std::isnan(alt) || alt <= 20.0 || finito == 1) {
@@ -511,7 +489,6 @@ bool FGAuxiliary::Run(bool Holding)
       fprintf(positionFile, "%d %lf %lf %lf %lf %lf %lf %lf %lf %lf %d\n", iter, pos.posLA, pos.posLN, pos.posLE, pos.posCGA, pos.posCGN, pos.posCGE, pos.posRA, pos.posRN, pos.posRE, finito);
   }
 
-  //fprintf(positionFile, "%d %lf %lf %lf %lf %lf %lf %lf %lf %lf\n", iter, pos.posLA, pos.posLN, pos.posLE, pos.posCGA, pos.posCGN, pos.posCGE, pos.posRA, pos.posRN, pos.posRE);
     // Release the lock
   /* if (flock(fd, LOCK_UN) == -1) {
       perror("Error unlocking file");
@@ -983,49 +960,6 @@ double* FGAuxiliary::rechercheNoeuds(double hauteur, double longueur, double lar
             break;
         }
     }
-
-    //std::cout << indice1h << " " << indice2h << " " << indice1y << " " << indice2y << " " << indice1z << " " << indice2z << std::endl;
-
-    // Afficher les indices et les distances
-    /* std::cout << "-----------------------------------------------------------------------------" << std::endl;
-    std::cout << "POSITION INITIALE : Hauteur = 1000 [m], Longueur = 100 [m], Largeur = 4000 [m]" << std::endl;
-    
-    std::cout << "------------------HAUTEUR------------------" << std::endl;
-    if (indice1h != -1 && indice2h != -1) {
-        std::cout << "La hauteur " << hauteur << " [m] se trouve entre les noeuds " << indice1h << " ("<<grid[0][indice1h] << "[m]) et " << indice2h<< " ("<<grid[0][indice2h] << "[m])cd " << std::endl;
-        std::cout << "Distance par rapport au noeud " << indice1h << " = " << hauteur - grid[0][indice1h] << "[m] " << std::endl;
-        std::cout << "Distance par rapport au noeud" << indice2h << " = " << grid[0][indice2h] - hauteur << "[m] "<< std::endl;
-    } else {
-        std::cout << "La valeur " << hauteur << " n'est pas présente dans le tableau." << std::endl;
-    }
-
-    std::cout << "----------------AVANT/ARRIERE----------------" << std::endl;
-    if (indice1y != -1 && indice2y != -1) {
-        std::cout << "J'ai avance de " << longueur  << " [m] en avant depuis l'entree dans BigFlow  "  << std::endl;
-        std::cout << "Je me trouve  entre les noeuds " << indice1y << " ("<<grid[1][indice1y] << "[m]) et " << indice2y << " ("<<grid[1][indice2y] << "[m]) " << std::endl;
-        std::cout << "Distance par rapport au noeud " << indice1y << " = " << (longueur + ref_long) - grid[1][indice1y] << "[m] " << std::endl;
-        std::cout << "Distance par rapport au noeud" << indice2y << " = " << grid[1][indice2y] - (longueur+ref_long) << "[m] "<< std::endl;
-    } else {
-        std::cout << "La valeur " << longueur + ref_long << " n'est pas présente dans le tableau." << std::endl;
-    }
-
-    std::cout << "-----------------DROITE/GAUCHE---------------" << std::endl;
-    if (indice1z != -1 && indice2z != -1) {
-        
-        if (longi > 0 )
-        {
-          std::cout << "J'avance vers la droite" << std::endl;
-        }
-        else {
-          std::cout << "J'avance vers la gauche" << std::endl;
-        }
-        std::cout << "J'ai avance de " << z_bis << " [m] depuis l'entree dans BigFlow " << std::endl;
-        std::cout << "Je me trouve  entre les noeuds " << indice1z << " ("<<grid[2][indice1z] << "[m]) et " << indice2z << " ("<<grid[2][indice2z] << "[m]) " << std::endl;
-        std::cout << "Distance par rapport au noeud " << indice1z << " = " <<  (largeur + refz) - grid[2][indice1z] << "[m] " << std::endl;
-        std::cout << "Distance par rapport au noeud " << indice2z << " = " << grid[2][indice2z] - (largeur+ refz) << "[m] "<< std::endl;
-    } else {
-        std::cout << "La valeur " << largeur + refz << " n'est pas présente dans le tableau." << std::endl;
-    } */
 
  
      // RATIO 
